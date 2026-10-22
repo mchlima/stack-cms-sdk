@@ -1,0 +1,15 @@
+# Worktrees dos agentes
+.worktrees/
+.claude/worktrees/
+
+# Dependências e builds
+node_modules/
+dist/
+coverage/
+
+# Sistema e editores
+.DS_Store
+*.log
+
+# Relatórios dos testes (vitest)
+.vitest/
