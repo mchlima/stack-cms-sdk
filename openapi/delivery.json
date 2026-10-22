@@ -1,0 +1,2721 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Stack CMS Delivery API",
+    "description": "Gestão (`/v1`) e Delivery (`/delivery/v1`) do Stack CMS. Erros sempre como `{ \"error\": { \"code\", \"message\", \"details\" } }`.",
+    "version": "1",
+    "contact": {}
+  },
+  "servers": [
+    {
+      "url": "https://cms-api.stack201.com.br"
+    }
+  ],
+  "paths": {
+    "/delivery/v1/space": {
+      "get": {
+        "operationId": "deliverySpace",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliverySpace"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/posts": {
+      "get": {
+        "operationId": "deliveryPosts",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            }
+          },
+          {
+            "name": "tag",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            }
+          },
+          {
+            "name": "author",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 500
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostCardPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/posts/{slug}.md": {
+      "get": {
+        "operationId": "deliveryPostMarkdown",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/markdown": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/posts/{slug}": {
+      "get": {
+        "operationId": "deliveryPost",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35
+            }
+          },
+          {
+            "name": "preview",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "0",
+                "1",
+                "true",
+                "false"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostDetail"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/tags": {
+      "get": {
+        "operationId": "deliveryTags",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagItem"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/tags/{slug}": {
+      "get": {
+        "operationId": "deliveryTag",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 500
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/categories": {
+      "get": {
+        "operationId": "deliveryCategories",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryItem"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/categories/{slug}": {
+      "get": {
+        "operationId": "deliveryCategory",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 500
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/authors": {
+      "get": {
+        "operationId": "deliveryAuthors",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuthorItem"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/authors/{slug}": {
+      "get": {
+        "operationId": "deliveryAuthor",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 500
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/resolve": {
+      "get": {
+        "operationId": "deliveryResolve",
+        "parameters": [
+          {
+            "name": "path",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 500,
+              "pattern": "^\\/(?!\\/)[^\\s?#]*$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResolvedPath"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/redirects": {
+      "get": {
+        "operationId": "deliveryRedirects",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryRedirect"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/sitemap.xml": {
+      "get": {
+        "operationId": "deliverySitemapIndex",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/sitemaps/{file}": {
+      "get": {
+        "operationId": "deliverySitemap",
+        "parameters": [
+          {
+            "name": "file",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/feeds/{file}": {
+      "get": {
+        "operationId": "deliveryFeed",
+        "parameters": [
+          {
+            "name": "file",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/rss+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/atom+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/feed+json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/llms.txt": {
+      "get": {
+        "operationId": "deliveryLlms",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/llms-full.txt": {
+      "get": {
+        "operationId": "deliveryLlmsFull",
+        "parameters": [
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/indexnow-key.txt": {
+      "get": {
+        "operationId": "deliveryIndexNowKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/robots.txt": {
+      "get": {
+        "operationId": "deliveryRobots",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Alternate": {
+        "type": "object",
+        "properties": {
+          "hreflang": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "hreflang",
+          "path",
+          "url"
+        ]
+      },
+      "AuthorItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "jobTitle": {
+            "nullable": true,
+            "type": "string"
+          },
+          "avatar": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Image"
+              }
+            ]
+          },
+          "posts": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "path",
+          "url",
+          "jobTitle",
+          "avatar",
+          "posts"
+        ]
+      },
+      "AuthorPage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "jobTitle": {
+            "nullable": true,
+            "type": "string"
+          },
+          "credentials": {
+            "nullable": true,
+            "type": "string"
+          },
+          "bio": {
+            "nullable": true,
+            "type": "string"
+          },
+          "bioHtml": {
+            "nullable": true,
+            "type": "string"
+          },
+          "avatar": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Image"
+              }
+            ]
+          },
+          "sameAs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "emailPublic": {
+            "nullable": true,
+            "type": "string"
+          },
+          "seo": {
+            "$ref": "#/components/schemas/ResolvedSeo"
+          },
+          "seoFields": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "maxLength": 200
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "canonical": {
+                "type": "string",
+                "format": "uri"
+              },
+              "robots": {
+                "type": "object",
+                "properties": {
+                  "index": {
+                    "type": "boolean"
+                  },
+                  "follow": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "ogTitle": {
+                "type": "string",
+                "maxLength": 200
+              },
+              "ogDescription": {
+                "type": "string",
+                "maxLength": 500
+              }
+            }
+          },
+          "jsonLd": {
+            "$ref": "#/components/schemas/JsonLd"
+          },
+          "alternates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Alternate"
+            }
+          },
+          "posts": {
+            "$ref": "#/components/schemas/PostCardPage"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "path",
+          "url",
+          "jobTitle",
+          "credentials",
+          "bio",
+          "bioHtml",
+          "avatar",
+          "sameAs",
+          "emailPublic",
+          "seo",
+          "seoFields",
+          "jsonLd",
+          "alternates",
+          "posts"
+        ]
+      },
+      "CategoryItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "parentId": {
+            "nullable": true,
+            "type": "string",
+            "format": "uuid"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "posts": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "path",
+          "url",
+          "parentId",
+          "position",
+          "posts"
+        ]
+      },
+      "CategoryPage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "descriptionHtml": {
+            "nullable": true,
+            "type": "string"
+          },
+          "cover": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Image"
+              }
+            ]
+          },
+          "seo": {
+            "$ref": "#/components/schemas/ResolvedSeo"
+          },
+          "seoFields": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "maxLength": 200
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "canonical": {
+                "type": "string",
+                "format": "uri"
+              },
+              "robots": {
+                "type": "object",
+                "properties": {
+                  "index": {
+                    "type": "boolean"
+                  },
+                  "follow": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "ogTitle": {
+                "type": "string",
+                "maxLength": 200
+              },
+              "ogDescription": {
+                "type": "string",
+                "maxLength": 500
+              }
+            }
+          },
+          "jsonLd": {
+            "$ref": "#/components/schemas/JsonLd"
+          },
+          "alternates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Alternate"
+            }
+          },
+          "posts": {
+            "$ref": "#/components/schemas/PostCardPage"
+          },
+          "parent": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TermLink"
+              }
+            ]
+          },
+          "parents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TermLink"
+            }
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TermLink"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "path",
+          "url",
+          "description",
+          "descriptionHtml",
+          "cover",
+          "seo",
+          "seoFields",
+          "jsonLd",
+          "alternates",
+          "posts",
+          "parent",
+          "parents",
+          "children"
+        ]
+      },
+      "DeliveryRedirect": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "status"
+        ]
+      },
+      "DeliverySpace": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "defaultLocale": {
+            "type": "string"
+          },
+          "locales": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "siteUrl": {
+            "nullable": true,
+            "type": "string"
+          },
+          "urlPatterns": {
+            "type": "object",
+            "properties": {
+              "home": {
+                "type": "string",
+                "maxLength": 200,
+                "pattern": "^\\/[A-Za-z0-9\\-._~/{}]*$"
+              },
+              "post": {
+                "type": "string",
+                "maxLength": 200,
+                "pattern": "^\\/[A-Za-z0-9\\-._~/{}]*$"
+              },
+              "category": {
+                "type": "string",
+                "maxLength": 200,
+                "pattern": "^\\/[A-Za-z0-9\\-._~/{}]*$"
+              },
+              "tag": {
+                "type": "string",
+                "maxLength": 200,
+                "pattern": "^\\/[A-Za-z0-9\\-._~/{}]*$"
+              },
+              "author": {
+                "type": "string",
+                "maxLength": 200,
+                "pattern": "^\\/[A-Za-z0-9\\-._~/{}]*$"
+              }
+            },
+            "required": [
+              "home",
+              "post",
+              "category",
+              "tag",
+              "author"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "organization": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "Organization",
+                  "Person"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "sameAs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "logo": {
+                "nullable": true,
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Image"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "name",
+              "sameAs",
+              "logo"
+            ]
+          },
+          "customBlocks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9-]{1,39}$"
+                },
+                "container": {
+                  "type": "boolean"
+                },
+                "attributes": {
+                  "maxItems": 20,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]{0,39}$"
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "string",
+                          "number",
+                          "boolean"
+                        ]
+                      },
+                      "required": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "type"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "name",
+                "container",
+                "attributes"
+              ]
+            }
+          },
+          "path": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "seo": {
+            "$ref": "#/components/schemas/ResolvedSeo"
+          },
+          "seoFields": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "maxLength": 200
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "canonical": {
+                "type": "string",
+                "format": "uri"
+              },
+              "robots": {
+                "type": "object",
+                "properties": {
+                  "index": {
+                    "type": "boolean"
+                  },
+                  "follow": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "ogTitle": {
+                "type": "string",
+                "maxLength": 200
+              },
+              "ogDescription": {
+                "type": "string",
+                "maxLength": 500
+              }
+            }
+          },
+          "jsonLd": {
+            "$ref": "#/components/schemas/JsonLd"
+          },
+          "alternates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Alternate"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "locale",
+          "defaultLocale",
+          "locales",
+          "siteUrl",
+          "urlPatterns",
+          "title",
+          "description",
+          "organization",
+          "customBlocks",
+          "path",
+          "url",
+          "seo",
+          "seoFields",
+          "jsonLd",
+          "alternates"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "VALIDATION_FAILED",
+                  "BAD_REQUEST",
+                  "UNAUTHENTICATED",
+                  "FORBIDDEN",
+                  "NOT_FOUND",
+                  "METHOD_NOT_ALLOWED",
+                  "CONFLICT",
+                  "PAYLOAD_TOO_LARGE",
+                  "UNSUPPORTED_MEDIA_TYPE",
+                  "TOO_MANY_REQUESTS",
+                  "INSUFFICIENT_SCOPE",
+                  "PLAN_LIMIT",
+                  "SLUG_TAKEN",
+                  "VERSION_CONFLICT",
+                  "READ_ONLY",
+                  "INVALID_FILE",
+                  "IN_USE",
+                  "PUBLISH_BLOCKED",
+                  "INTERNAL_ERROR",
+                  "SERVICE_UNAVAILABLE"
+                ]
+              },
+              "message": {
+                "type": "string",
+                "description": "Em pt-BR, pode ser mostrada à pessoa"
+              },
+              "details": {
+                "type": "object",
+                "additionalProperties": {}
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "details"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "Image": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "alt": {
+            "nullable": true,
+            "type": "string"
+          },
+          "caption": {
+            "nullable": true,
+            "type": "string"
+          },
+          "credit": {
+            "nullable": true,
+            "type": "string"
+          },
+          "width": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "height": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImageVariant"
+            }
+          },
+          "crops": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/ImageVariant"
+              }
+            }
+          },
+          "blurhash": {
+            "nullable": true,
+            "type": "string"
+          },
+          "dominantColor": {
+            "nullable": true,
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "alt",
+          "caption",
+          "credit",
+          "width",
+          "height",
+          "variants",
+          "crops",
+          "blurhash",
+          "dominantColor",
+          "contentType"
+        ]
+      },
+      "ImageVariant": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": [
+              "avif",
+              "webp",
+              "jpeg",
+              "png",
+              "gif",
+              "svg"
+            ]
+          },
+          "width": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "format",
+          "width",
+          "url"
+        ]
+      },
+      "JsonLd": {
+        "type": "object",
+        "additionalProperties": {},
+        "description": "schema.org em JSON-LD"
+      },
+      "PostCard": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "article",
+              "guide",
+              "news",
+              "tech"
+            ]
+          },
+          "slug": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "shortTitle": {
+            "nullable": true,
+            "type": "string"
+          },
+          "excerpt": {
+            "nullable": true,
+            "type": "string"
+          },
+          "shortExcerpt": {
+            "nullable": true,
+            "type": "string"
+          },
+          "cover": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Image"
+              }
+            ]
+          },
+          "datePublished": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time"
+          },
+          "dateModified": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time"
+          },
+          "readingMinutes": {
+            "nullable": true,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "authors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TermLink"
+            }
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "primary": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "slug",
+                "name",
+                "path",
+                "url",
+                "primary"
+              ]
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TermLink"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "locale",
+          "type",
+          "slug",
+          "path",
+          "url",
+          "title",
+          "shortTitle",
+          "excerpt",
+          "shortExcerpt",
+          "cover",
+          "datePublished",
+          "dateModified",
+          "readingMinutes",
+          "authors",
+          "categories",
+          "tags"
+        ]
+      },
+      "PostCardPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PostCard"
+            }
+          },
+          "next": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "next"
+        ]
+      },
+      "PostDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "article",
+              "guide",
+              "news",
+              "tech"
+            ]
+          },
+          "slug": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "shortTitle": {
+            "nullable": true,
+            "type": "string"
+          },
+          "excerpt": {
+            "nullable": true,
+            "type": "string"
+          },
+          "shortExcerpt": {
+            "nullable": true,
+            "type": "string"
+          },
+          "cover": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Image"
+              }
+            ]
+          },
+          "datePublished": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time"
+          },
+          "dateModified": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time"
+          },
+          "readingMinutes": {
+            "nullable": true,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "authors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TermLink"
+            }
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "primary": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "slug",
+                "name",
+                "path",
+                "url",
+                "primary"
+              ]
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TermLink"
+            }
+          },
+          "revisionId": {
+            "nullable": true,
+            "type": "string",
+            "format": "uuid"
+          },
+          "preview": {
+            "type": "boolean"
+          },
+          "html": {
+            "type": "string"
+          },
+          "hast": {},
+          "toc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TocItem"
+            }
+          },
+          "tldr": {
+            "nullable": true,
+            "type": "string"
+          },
+          "faq": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "title": {
+                "nullable": true,
+                "type": "string"
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "question": {
+                      "type": "string"
+                    },
+                    "answer": {
+                      "type": "string"
+                    },
+                    "html": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "question",
+                    "answer",
+                    "html"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "title",
+              "items"
+            ]
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "org": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "title",
+                "url"
+              ]
+            }
+          },
+          "wordCount": {
+            "nullable": true,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "seo": {
+            "$ref": "#/components/schemas/ResolvedSeo"
+          },
+          "seoFields": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "maxLength": 200
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "canonical": {
+                "type": "string",
+                "format": "uri"
+              },
+              "robots": {
+                "type": "object",
+                "properties": {
+                  "index": {
+                    "type": "boolean"
+                  },
+                  "follow": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "ogTitle": {
+                "type": "string",
+                "maxLength": 200
+              },
+              "ogDescription": {
+                "type": "string",
+                "maxLength": 500
+              }
+            }
+          },
+          "jsonLd": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JsonLd"
+              }
+            ]
+          },
+          "alternates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Alternate"
+            }
+          },
+          "related": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PostCard"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "locale",
+          "type",
+          "slug",
+          "path",
+          "url",
+          "title",
+          "shortTitle",
+          "excerpt",
+          "shortExcerpt",
+          "cover",
+          "datePublished",
+          "dateModified",
+          "readingMinutes",
+          "authors",
+          "categories",
+          "tags",
+          "revisionId",
+          "preview",
+          "html",
+          "hast",
+          "toc",
+          "tldr",
+          "faq",
+          "sources",
+          "wordCount",
+          "seo",
+          "seoFields",
+          "jsonLd",
+          "alternates",
+          "related"
+        ]
+      },
+      "ResolvedPath": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "home",
+                  "post",
+                  "category",
+                  "tag",
+                  "author"
+                ]
+              },
+              "locale": {
+                "type": "string"
+              },
+              "slug": {
+                "nullable": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "locale",
+              "slug"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "redirect"
+                ]
+              },
+              "status": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "to": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "status",
+              "to"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "gone"
+                ]
+              },
+              "status": {
+                "type": "number",
+                "enum": [
+                  410
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "status"
+            ]
+          }
+        ]
+      },
+      "ResolvedSeo": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "canonical": {
+            "type": "string"
+          },
+          "robots": {
+            "type": "object",
+            "properties": {
+              "index": {
+                "type": "boolean"
+              },
+              "follow": {
+                "type": "boolean"
+              },
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "index",
+              "follow",
+              "content"
+            ]
+          },
+          "ogTitle": {
+            "type": "string"
+          },
+          "ogDescription": {
+            "nullable": true,
+            "type": "string"
+          },
+          "ogImage": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SharedImage"
+              }
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "canonical",
+          "robots",
+          "ogTitle",
+          "ogDescription",
+          "ogImage"
+        ]
+      },
+      "SharedImage": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "width": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "height": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "alt": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "width",
+          "height",
+          "alt"
+        ]
+      },
+      "SitePayload": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "post.published",
+              "post.updated",
+              "post.unpublished",
+              "taxonomy.updated",
+              "space.updated",
+              "redirects.updated"
+            ]
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "space": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "slug": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "slug"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "urls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "occurredAt",
+          "space",
+          "data",
+          "paths",
+          "urls"
+        ]
+      },
+      "TagItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "posts": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "path",
+          "url",
+          "posts"
+        ]
+      },
+      "TagPage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "descriptionHtml": {
+            "nullable": true,
+            "type": "string"
+          },
+          "cover": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Image"
+              }
+            ]
+          },
+          "seo": {
+            "$ref": "#/components/schemas/ResolvedSeo"
+          },
+          "seoFields": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "maxLength": 200
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "canonical": {
+                "type": "string",
+                "format": "uri"
+              },
+              "robots": {
+                "type": "object",
+                "properties": {
+                  "index": {
+                    "type": "boolean"
+                  },
+                  "follow": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "ogTitle": {
+                "type": "string",
+                "maxLength": 200
+              },
+              "ogDescription": {
+                "type": "string",
+                "maxLength": 500
+              }
+            }
+          },
+          "jsonLd": {
+            "$ref": "#/components/schemas/JsonLd"
+          },
+          "alternates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Alternate"
+            }
+          },
+          "posts": {
+            "$ref": "#/components/schemas/PostCardPage"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "path",
+          "url",
+          "description",
+          "descriptionHtml",
+          "cover",
+          "seo",
+          "seoFields",
+          "jsonLd",
+          "alternates",
+          "posts"
+        ]
+      },
+      "TermLink": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "path",
+          "url"
+        ]
+      },
+      "TocItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "depth": {
+            "anyOf": [
+              {
+                "type": "number",
+                "enum": [
+                  2
+                ]
+              },
+              {
+                "type": "number",
+                "enum": [
+                  3
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "depth"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "deliveryKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Chave de API `delivery` (`scms_dlv_…`) ou `preview` (`scms_prv_…`) do space: ela diz o space."
+      }
+    }
+  }
+}
