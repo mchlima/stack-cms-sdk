@@ -51,7 +51,8 @@ Regras têm id `RS-NN` e critérios de aceite `CS-NN`. Decisões do Michel de 20
   - um _loader_ para as coleções de conteúdo: posts, tags, categorias e autores entram no build como coleções;
   - as mesmas rotas prontas;
   - os redirecionamentos gerados para o `astro.config`.
-    É o que o site da Stack201 vai usar no lugar dos MDX, e um aviso do CMS dispara o rebuild na Vercel.
+    É o que o site da Stack201 vai usar no lugar dos MDX. O rebuild na Vercel vem de um _Deploy Hook_ cadastrado como
+    webhook do space: o SDK não precisa conferir a assinatura, porque a Vercel só refaz o site.
 - **RS-09** **Webhooks:** `verifyCmsWebhook(request, secret)` confere o HMAC, o horário (até 5 minutos) e devolve o
   evento tipado.
 

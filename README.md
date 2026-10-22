@@ -74,3 +74,29 @@ export const POST = createRevalidateRoute({
 
 `cmsMetadata(post)` dá o `Metadata` do `generateMetadata`, `cmsRedirects(cms)` dá os redirecionamentos do
 `next.config`, e `cmsFileRoute(cms)` serve os arquivos como rotas, para quem não quer o middleware.
+
+Com Astro (site estático), as coleções e os arquivos entram no build:
+
+```ts
+// src/content.config.ts
+import { defineCollection, z } from 'astro:content';
+import { cmsLoader } from '@stack201/cms-sdk/astro';
+import type { Post } from '@stack201/cms-sdk';
+
+const posts = defineCollection({
+  loader: cmsLoader(cms, { collection: 'posts' }),
+  schema: z.custom<Post>(),
+});
+
+// src/pages/sitemap.xml.ts (e llms.txt.ts, robots.txt.ts…)
+export const GET = cmsFileEndpoint(cms);
+
+// src/pages/sitemaps/[file].ts (e feeds/[file].ts)
+export const getStaticPaths = () => cmsFilePaths(cms, 'sitemaps');
+export const GET = cmsFileEndpoint(cms);
+```
+
+`render(entry)` dá o HTML do post e os títulos, `cmsMarkdownEndpoint(cms)` serve o `.md` de cada post,
+`cmsPostSlugs(cms)` alimenta o `getStaticPaths` e `cmsAstroRedirects(cms)` dá os `redirects` do `astro.config`. Para
+publicar no CMS e o site se refazer, crie um _Deploy Hook_ no projeto da Vercel e cadastre o endereço dele como webhook
+do space.
