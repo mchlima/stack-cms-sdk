@@ -26,6 +26,10 @@
       "types": "./dist/react/index.d.ts",
       "import": "./dist/react/index.js"
     },
+    "./next": {
+      "types": "./dist/next/index.d.ts",
+      "import": "./dist/next/index.js"
+    },
     "./webhooks": {
       "types": "./dist/webhooks.d.ts",
       "import": "./dist/webhooks.js"

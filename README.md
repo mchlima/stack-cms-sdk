@@ -49,3 +49,28 @@ import { CmsContent, CmsHead } from '@stack201/cms-sdk/react';
 
 Sem React, `headTags(page)` e `headHtml(page)` dão as mesmas tags do `<head>`, e `jsonLdString(data)` dá o JSON-LD
 escapado.
+
+Com Next (App Router), sem depender do pacote `next`:
+
+```ts
+// middleware.ts: redirecionamentos, sitemaps, feeds, llms.txt, robots.txt e o .md de cada post
+import { NextResponse, type NextRequest } from 'next/server';
+import { createCmsMiddleware } from '@stack201/cms-sdk/next';
+
+const cmsMiddleware = createCmsMiddleware(cms);
+export async function middleware(request: NextRequest) {
+  return (await cmsMiddleware(request)) ?? NextResponse.next();
+}
+
+// app/api/cms/route.ts: o webhook do CMS revalida só as páginas afetadas
+import { revalidatePath } from 'next/cache';
+import { createRevalidateRoute } from '@stack201/cms-sdk/next';
+
+export const POST = createRevalidateRoute({
+  secret: process.env.CMS_WEBHOOK_SECRET!,
+  revalidatePath,
+});
+```
+
+`cmsMetadata(post)` dá o `Metadata` do `generateMetadata`, `cmsRedirects(cms)` dá os redirecionamentos do
+`next.config`, e `cmsFileRoute(cms)` serve os arquivos como rotas, para quem não quer o middleware.
