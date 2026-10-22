@@ -37,3 +37,15 @@ export async function POST(request: Request) {
   return new Response(null, { status: 204 });
 }
 ```
+
+Com React, o conteúdo e o `<head>`:
+
+```tsx
+import { CmsContent, CmsHead } from '@stack201/cms-sdk/react';
+
+<CmsHead seo={post.seo} alternates={post.alternates} jsonLd={post.jsonLd} type="article" />
+<CmsContent hast={post.hast} components={{ a: Link, img: Image }} blocks={{ note: Callout, cta: Cta }} />
+```
+
+Sem React, `headTags(page)` e `headHtml(page)` dão as mesmas tags do `<head>`, e `jsonLdString(data)` dá o JSON-LD
+escapado.

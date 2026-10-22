@@ -31,9 +31,11 @@ Regras têm id `RS-NN` e critérios de aceite `CS-NN`. Decisões do Michel de 20
 
 ## 3. Desenhar o conteúdo
 
-- **RS-05** O site pode usar o `html` pronto ou o `hast`. O `<CmsContent hast={post.hast} components={{ … }} />`
-  troca qualquer elemento (`img`, `a`, `table`) e qualquer bloco (`answer`, `note`, `steps` e os blocos do space,
-  pelo `data-block`) por um componente do site. O que não for trocado sai como o HTML do CMS.
+- **RS-05** O site pode usar o `html` pronto ou o `hast`. O
+  `<CmsContent hast={post.hast} components={{ … }} blocks={{ … }} />` troca qualquer elemento (`img`, `a`,
+  `table`), pela tag, e qualquer bloco (`answer`, `note`, `steps` e os blocos do space), pelo `data-block`, por um
+  componente do site. Os dois ficam separados porque `table` é tag e também bloco. O bloco recebe o nome, os
+  atributos sem o `data-`, o `id` e o conteúdo já desenhado. O que não for trocado sai como o HTML do CMS.
 - **RS-06** Helpers para o `<head>`: o SEO já resolvido do post (título, descrição, canonical, `robots`, Open Graph,
   `hreflang` com o `x-default`) e o JSON-LD em `<script type="application/ld+json">`, com os caracteres perigosos
   escapados.
