@@ -330,6 +330,16 @@ export interface components {
             avatar: components["schemas"]["Image"] | null;
             posts: number;
         };
+        AuthorLink: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+            path: string;
+            url: string;
+            /** @enum {string} */
+            kind: "Person" | "Organization" | "Publisher";
+        };
         AuthorPage: {
             /** Format: uuid */
             id: string;
@@ -518,7 +528,7 @@ export interface components {
             /** Format: date-time */
             dateModified: string | null;
             readingMinutes: number | null;
-            authors: components["schemas"]["TermLink"][];
+            authors: components["schemas"]["AuthorLink"][];
             categories: {
                 /** Format: uuid */
                 id: string;
@@ -553,7 +563,7 @@ export interface components {
             /** Format: date-time */
             dateModified: string | null;
             readingMinutes: number | null;
-            authors: components["schemas"]["TermLink"][];
+            authors: components["schemas"]["AuthorLink"][];
             categories: {
                 /** Format: uuid */
                 id: string;
