@@ -36,27 +36,59 @@ export async function siteFile(client: CmsClient, url: URL): Promise<Response | 
   return fileResponse(client, url.pathname, { ...query, locale: query.locale ?? null });
 }
 
+/** What an address before `rss.xml` is, for a minute: a site's own feed (`/blog/rss.xml`) asks the API once. */
+interface FeedPage {
+  category: CategoryAt | null;
+  until: number;
+}
+type FeedPages = Map<string, FeedPage>;
+const FEED_PAGES = new WeakMap<CmsClient, FeedPages>();
+const FEED_PAGE_TTL = 60_000;
+const FEED_PAGES_MAX = 1000;
+interface CategoryAt {
+  slugPath: string;
+  locale: string;
+}
+
+async function categoryAt(client: CmsClient, page: string): Promise<CategoryAt | null> {
+  const cache: FeedPages = FEED_PAGES.get(client) ?? new Map<string, FeedPage>();
+  FEED_PAGES.set(client, cache);
+  const known = cache.get(page);
+  if (known && known.until > Date.now()) {
+    return known.category;
+  }
+  let category: CategoryAt | null = null;
+  try {
+    const resolved = await client.resolve(page);
+    if ('locale' in resolved && resolved.kind === 'category' && resolved.slug) {
+      category = { slugPath: resolved.slugPath ?? resolved.slug, locale: resolved.locale };
+    }
+  } catch (error) {
+    if (!(error instanceof CmsNotFoundError)) {
+      // The API out of reach does not take down a route of the site with the same end.
+      console.warn(
+        `[cms-sdk] Não deu para saber se ${page} é uma categoria: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return null;
+    }
+  }
+  if (cache.size >= FEED_PAGES_MAX) {
+    cache.clear();
+  }
+  cache.set(page, { category, until: Date.now() + FEED_PAGE_TTL });
+  return category;
+}
+
 /** The feed of a category at its address, or null when the address before the end is not a category. */
 async function categoryFeed(client: CmsClient, url: URL): Promise<Response | null> {
   const [, page = '', end = ''] = CATEGORY_FEED.exec(url.pathname) ?? [];
-  if (!page) {
-    return null;
-  }
-  let resolved: Awaited<ReturnType<CmsClient['resolve']>>;
-  try {
-    resolved = await client.resolve(page);
-  } catch (error) {
-    if (error instanceof CmsNotFoundError) {
-      return null;
-    }
-    throw error;
-  }
-  if (!('locale' in resolved) || resolved.kind !== 'category' || !resolved.slug) {
+  const category = page ? await categoryAt(client, page) : null;
+  if (!category) {
     return null;
   }
   const format = CATEGORY_FEEDS[end as keyof typeof CATEGORY_FEEDS];
-  const name = `category-${resolved.slug.replaceAll('/', '.')}.${format}`;
-  return fileResponse(client, `/feeds/${name}`, { locale: resolved.locale });
+  const name = `category-${category.slugPath.replaceAll('/', '.')}.${format}`;
+  return fileResponse(client, `/feeds/${name}`, { locale: category.locale });
 }
 
 async function fileResponse(

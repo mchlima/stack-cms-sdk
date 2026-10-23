@@ -79,9 +79,8 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 80,
-              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              "maxLength": 800,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\/[a-z0-9]+(?:-[a-z0-9]+)*)*$"
             }
           },
           {
@@ -2645,6 +2644,9 @@
               },
               "slug": {
                 "nullable": true,
+                "type": "string"
+              },
+              "slugPath": {
                 "type": "string"
               }
             },

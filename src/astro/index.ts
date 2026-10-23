@@ -221,8 +221,9 @@ export async function cmsPostSlugs(client: CmsClient, options: { locale?: string
 }
 
 /**
- * RS-16: the `getStaticPaths` of the pages of the categories, at a route `[...path].astro`: `path` is the
- * `slugPath` (`sites/desempenho`), as the address model `{path}` writes it.
+ * RS-16: the `getStaticPaths` of the pages of the categories, at a route `[...path].astro`: `path` is what the
+ * address of the category has after its prefix, the `slugPath` with the model `{path}` (`sites/desempenho`) or the
+ * slug with `{slug}` (`desempenho`). `categories.get` takes either.
  *
  *   // src/pages/guias/categoria/[...path].astro
  *   export const getStaticPaths = () => cmsCategoryPaths(cms);
@@ -236,7 +237,10 @@ export async function cmsPostSlugs(client: CmsClient, options: { locale?: string
  */
 export async function cmsCategoryPaths(client: CmsClient, options: { locale?: string } = {}) {
   const categories = await client.categories.list({ locale: options.locale });
-  return categories.map((c) => ({ params: { path: c.slugPath } }));
+  // With `{path}` the address ends with the slug path; with `{slug}`, with the slug alone.
+  return categories.map((c) => ({
+    params: { path: c.path.endsWith(`/${c.slugPath}`) ? c.slugPath : c.slug },
+  }));
 }
 
 /**

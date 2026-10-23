@@ -86,6 +86,7 @@ describe('@stack201/cms-sdk/astro (RS-08)', () => {
       slug,
       slugPath,
       name: slug,
+      path: `/guias/categoria/${slugPath}`,
       url: `${SITE}/guias/categoria/${slugPath}`,
     });
     const { client, calls } = fakeApi({
@@ -104,6 +105,15 @@ describe('@stack201/cms-sdk/astro (RS-08)', () => {
       { params: { path: 'sites' } },
       { params: { path: 'sites/desempenho' } },
     ]);
+
+    // With {slug}, the address has the slug alone.
+    const flat = fakeApi({
+      '/categories': () =>
+        Response.json([
+          { ...category('desempenho', 'sites/desempenho'), path: '/guias/categoria/desempenho' },
+        ]),
+    });
+    expect(await cmsCategoryPaths(flat.client)).toEqual([{ params: { path: 'desempenho' } }]);
   });
 
   it('RS-17: the menus enter as a collection by their key, or one at a time', async () => {

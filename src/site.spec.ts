@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { createRedirectMatcher, siteFile, siteMarkdown } from './site.js';
 import { fakeApi, text } from './test/fake-api.js';
@@ -41,10 +41,33 @@ describe('what every site serves (RS-07, RS-08)', () => {
     expect(await atom?.text()).toBe('<feed/>');
     expect(await siteFile(client, new URL(`${SITE}/guias/core-web-vitals/rss.xml`))).toBeNull();
     expect(await siteFile(client, new URL(`${SITE}/nada/rss.xml`))).toBeNull();
+    // What an address is stays known for a minute: a site's own feed asks the API once.
+    await siteFile(client, new URL(`${SITE}/nada/rss.xml`));
+    expect(calls.filter((c) => c.startsWith('/resolve?path=%2Fnada'))).toHaveLength(1);
 
     // The name in the API, with `.` for `/`, at the same path too.
     await siteFile(client, new URL(`${SITE}/feeds/category-sites.desempenho.rss`));
     expect(calls).toContain('/feeds/category-sites.desempenho.rss');
+  });
+
+  it('with {slug}, the feed of a subcategory by the slug path of resolve; the API out, the site goes on', async () => {
+    const { client } = fakeApi({
+      '/resolve?path=%2Fblog%2Fcategoria%2Fvelocidade': () =>
+        Response.json({
+          kind: 'category',
+          locale: 'pt-BR',
+          slug: 'velocidade',
+          slugPath: 'desempenho/velocidade',
+        }),
+      '/feeds/category-desempenho.velocidade.rss?locale=pt-BR': () =>
+        text('<rss/>', 'application/rss+xml; charset=utf-8'),
+      '/resolve?path=%2Fblog': () => new Response('falhou', { status: 503 }),
+    });
+    const feed = await siteFile(client, new URL(`${SITE}/blog/categoria/velocidade/rss.xml`));
+    expect(await feed?.text()).toBe('<rss/>');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    expect(await siteFile(client, new URL(`${SITE}/blog/rss.xml`))).toBeNull();
+    warn.mockRestore();
   });
 
   it('the Markdown of a post at its address with .md, and 404 for what is not a post', async () => {

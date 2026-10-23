@@ -115,7 +115,7 @@ Decisões do Michel de 2026-10-23.
   `parent`, `parents` e `children`, e cada categoria de `post.categories`) tem `slugPath`, os slugs das mães e o
   dela (`sites/desempenho`), que é o `{path}` do modelo de endereço. `categories.get(ref)` aceita o `slugPath`, as
   partes dele (`['sites', 'desempenho']`, como a rota _catch-all_ dá) ou, só com o modelo `{slug}`, o slug
-  sozinho; cada `/` vai como `%2F`, num parâmetro só. O `resolve` dá o `slugPath` em `slug` para categorias. O site
+  sozinho; cada `/` vai como `%2F`, num parâmetro só. O `resolve` dá, para categorias, o que está no endereço em `slug` e o caminho em `slugPath`. O site
   serve a categoria numa rota de vários níveis: `app/…/categoria/[...path]` no Next e
   `src/pages/…/categoria/[...path].astro` no Astro, com `cmsCategoryPaths(cms)` no `getStaticPaths`. No _loader_
   do Astro, a categoria tem o `slugPath` como id. O feed de uma categoria tem o caminho, com `.` no lugar de `/`
@@ -131,7 +131,7 @@ Decisões do Michel de 2026-10-23.
 { locale })` lê um menu no build, e `cmsLoader(cms, { collection: 'menus' })` traz todos como coleção (id: a
   chave, ou `<locale>/<chave>`). O aviso `menu.updated` não traz `paths`: `menuChangeOf(event)` dá `key`,
   `previousKey` (renomeado), `deleted` e `reason` (`menu`, ou `pages` quando uma página do menu mudou de nome ou de
-  endereço, saiu do ar ou ganhou uma subcategoria); no Next, `createRevalidateRoute` revalida o que `onMenuUpdated(menu,
+  endereço, saiu do ar, ganhou ou perdeu uma subcategoria, ou o endereço do site mudou); no Next, `createRevalidateRoute` revalida o que `onMenuUpdated(menu,
 event)` devolver (e o site chama `revalidateTag` ali, se marca a busca dos menus) ou, sem a opção, o site todo
   (`revalidatePath('/', 'layout')`), porque o menu costuma estar no _layout_.
 
@@ -151,7 +151,8 @@ event)` devolver (e o site chama `revalidateTag` ali, se marca a busca dos menus
   um aviso em desenvolvimento (RS-12).
 
 - **CS-10** `categories.get('sites/desempenho')` e `categories.get(['sites', 'desempenho'])` chamam
-  `/categories/sites%2Fdesempenho`; o _loader_ e `cmsCategoryPaths` dão o `slugPath` (RS-16).
+  `/categories/sites%2Fdesempenho`; o _loader_ dá o `slugPath`, e `cmsCategoryPaths` dá o que o endereço tem: o `slugPath` com `{path}`, o slug com
+  `{slug}` (RS-16).
 - **CS-12** `…/sites/desempenho/rss.xml` serve `feeds/category-sites.desempenho.rss`, e o redirecionamento de
   `/sites/desempenho` leva `/sites/desempenho/rss.xml` ao novo endereço com `/rss.xml` (RS-16).
 - **CS-11** Um aviso `menu.updated` revalida o _layout_ inteiro, ou só o que `onMenuUpdated` disser; os outros

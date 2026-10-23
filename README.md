@@ -216,7 +216,8 @@ const category = await cms.categories.get(Astro.params.path!);
 ```
 
 Com o modelo `{slug}`, o slug sozinho também serve, porque ali ele é único. Com `{path}`, use sempre o caminho: o slug
-sozinho não acha uma subcategoria. No `cmsLoader` do Astro, a categoria tem o `slugPath`
+sozinho não acha uma subcategoria. A mesma rota `[...path]` serve os dois modelos: `cmsCategoryPaths` dá o que o
+endereço tem depois do prefixo (o caminho com `{path}`, o slug com `{slug}`). No `cmsLoader` do Astro, a categoria tem o `slugPath`
 como id. Mudar o slug ou a mãe no CMS gera os `301` sozinho, e eles chegam pelos redirecionamentos de sempre.
 
 O feed da categoria fica no endereço dela: `/guias/categoria/sites/desempenho/rss.xml` (e `atom.xml`, `feed.json`).
@@ -243,7 +244,7 @@ No Astro, `cmsMenu(cms, 'principal', { locale })` lê o menu no build, ou
 `cmsLoader(cms, { collection: 'menus' })` traz todos como coleção (`getEntry('menus', 'principal')`).
 
 O aviso `menu.updated` chega quando o menu muda e também quando uma página dele muda de nome ou de endereço, sai do
-ar ou ganha uma subcategoria (`menuChangeOf(event).reason` é `'pages'`). Ele não traz páginas. No Next, `createRevalidateRoute` revalida o site todo
+ar ou ganha ou perde uma subcategoria (`menuChangeOf(event).reason` é `'pages'`). Ele não traz páginas. No Next, `createRevalidateRoute` revalida o site todo
 (`revalidatePath('/', 'layout')`) por padrão, porque o menu costuma estar no _layout_; `onMenuUpdated` troca isso
 pelo que o site disser:
 

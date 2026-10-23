@@ -699,6 +699,7 @@ export interface components {
             kind: "home" | "post" | "category" | "tag" | "author";
             locale: string;
             slug: string | null;
+            slugPath?: string;
         } | {
             /** @enum {string} */
             kind: "redirect";
