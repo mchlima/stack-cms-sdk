@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/mchlima/stack-cms-sdk/compare/v0.3.0...v0.4.0) (2026-10-23)
+
+
+### Features
+
+* **conteudo:** blocos com componentes do site em React, Vue, Astro, Svelte e HTML puro ([#11](https://github.com/mchlima/stack-cms-sdk/issues/11)) ([e2e790b](https://github.com/mchlima/stack-cms-sdk/commit/e2e790baa67f2cd73d0f05b2256b42671b204d9c))
+
 ## [0.3.0](https://github.com/mchlima/stack-cms-sdk/compare/v0.2.0...v0.3.0) (2026-10-23)
 
 
