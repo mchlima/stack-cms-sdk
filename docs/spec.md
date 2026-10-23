@@ -118,10 +118,12 @@ Decisões do Michel de 2026-10-23.
   tem; cada `/` vai como `%2F`, num parâmetro só. O `resolve` dá o `slugPath` em `slug` para categorias. O site
   serve a categoria numa rota de vários níveis: `app/…/categoria/[...path]` no Next e
   `src/pages/…/categoria/[...path].astro` no Astro, com `cmsCategoryPaths(cms)` no `getStaticPaths`. No _loader_
-  do Astro, a categoria tem o `slugPath` como id. O feed de uma categoria continua pelo slug
-  (`category-<slug>`): `cmsFilePaths(cms, 'feeds')` deixa de fora os slugs que mais de uma categoria usa. Mudar o
-  slug ou a mãe gera os `301` no CMS, que chegam pelos redirecionamentos de sempre (`redirects()`, o _middleware_ e
-  o aviso `redirects.updated`).
+  do Astro, a categoria tem o `slugPath` como id. O feed de uma categoria tem o caminho, com `.` no lugar de `/`
+  (`feeds/category-sites.desempenho.rss`), e também fica no endereço da categoria (`…/sites/desempenho/rss.xml`,
+  `atom.xml`, `feed.json`): `siteFile` e o _middleware_ do Next acham a categoria pelo `resolve`, e no Astro a rota
+  `[...path]/rss.xml.ts` usa `cmsCategoryPaths` e `cmsFileEndpoint`. Mudar o slug ou a mãe gera os `301` no CMS, que
+  chegam pelos redirecionamentos de sempre (`redirects()`, o _middleware_ e o aviso `redirects.updated`); o
+  redirecionamento de uma página leva junto os feeds dela (`/antiga/rss.xml` → `/nova/rss.xml`).
 - **RS-17** **Menus:** `menus.list()` dá `{ key, name, description }` de cada menu, e
   `menus.get(key, { locale })` dá o menu numa língua com a árvore de itens já resolvida (`label`, `kind`, `href`,
   `url`, `external`, `targetId`, `children`), sem os ocultos; os dois repassam o `ETag` como as outras chamadas. Os
@@ -149,6 +151,8 @@ event)` devolver (e o site chama `revalidateTag` ali, se marca a busca dos menus
 
 - **CS-10** `categories.get('sites/desempenho')` e `categories.get(['sites', 'desempenho'])` chamam
   `/categories/sites%2Fdesempenho`; o _loader_ e `cmsCategoryPaths` dão o `slugPath` (RS-16).
+- **CS-12** `…/sites/desempenho/rss.xml` serve `feeds/category-sites.desempenho.rss`, e o redirecionamento de
+  `/sites/desempenho` leva `/sites/desempenho/rss.xml` ao novo endereço com `/rss.xml` (RS-16).
 - **CS-11** Um aviso `menu.updated` revalida o _layout_ inteiro, ou só o que `onMenuUpdated` disser; os outros
   avisos continuam revalidando os `paths` que trazem (RS-17).
 

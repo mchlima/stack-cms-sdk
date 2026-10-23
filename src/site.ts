@@ -7,23 +7,65 @@ import type { Redirect } from './types.js';
  * same paths of the API, the Markdown of each post at its address with `.md` and the redirects.
  */
 
-/** The files the site serves at the paths of the Delivery API (RN-34 of the API). */
+/**
+ * The files the site serves at the paths of the Delivery API (RN-34 of the API). The feed of a category has the slugs
+ * of its parents and its own joined by `.`: `feeds/category-sites.desempenho.rss`.
+ */
 export const SITE_FILE =
-  /^\/(?:sitemap\.xml|sitemaps\/[a-z0-9-]+\.xml|feeds\/[a-z0-9-]+\.(?:rss|atom|json)|llms\.txt|llms-full\.txt|robots\.txt|indexnow-key\.txt)$/;
+  /^\/(?:sitemap\.xml|sitemaps\/[a-z0-9-]+\.xml|feeds\/[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:rss|atom|json)|llms\.txt|llms-full\.txt|robots\.txt|indexnow-key\.txt)$/;
+
+/** The feeds of a category at its own address (`…/sites/desempenho/rss.xml`), by the end of the address. */
+const CATEGORY_FEEDS = { 'rss.xml': 'rss', 'atom.xml': 'atom', 'feed.json': 'json' } as const;
+const CATEGORY_FEED = /^(\/.+)\/(rss\.xml|atom\.xml|feed\.json)$/;
 
 /** The files change with each publication; a minute in the caches is enough (RN-43 of the API). */
 const FILE_CACHE = 'public, max-age=60, stale-while-revalidate=600';
 
 const notFound = () => new Response('Não encontrado.', { status: 404 });
 
-/** A file of the API, for the address asked, or null when the address is not one of them. */
+/**
+ * A file of the API, for the address asked, or null when the address is not one of them. The feed of a category is
+ * also at the address of the category, with `rss.xml`, `atom.xml` or `feed.json` at the end, so the redirects of the
+ * category cover it too.
+ */
 export async function siteFile(client: CmsClient, url: URL): Promise<Response | null> {
   if (!SITE_FILE.test(url.pathname)) {
-    return null;
+    return categoryFeed(client, url);
   }
   const query = Object.fromEntries(url.searchParams);
+  return fileResponse(client, url.pathname, { ...query, locale: query.locale ?? null });
+}
+
+/** The feed of a category at its address, or null when the address before the end is not a category. */
+async function categoryFeed(client: CmsClient, url: URL): Promise<Response | null> {
+  const [, page = '', end = ''] = CATEGORY_FEED.exec(url.pathname) ?? [];
+  if (!page) {
+    return null;
+  }
+  let resolved: Awaited<ReturnType<CmsClient['resolve']>>;
   try {
-    const file = await client.file(url.pathname, { ...query, locale: query.locale ?? null });
+    resolved = await client.resolve(page);
+  } catch (error) {
+    if (error instanceof CmsNotFoundError) {
+      return null;
+    }
+    throw error;
+  }
+  if (!('locale' in resolved) || resolved.kind !== 'category' || !resolved.slug) {
+    return null;
+  }
+  const format = CATEGORY_FEEDS[end as keyof typeof CATEGORY_FEEDS];
+  const name = `category-${resolved.slug.replaceAll('/', '.')}.${format}`;
+  return fileResponse(client, `/feeds/${name}`, { locale: resolved.locale });
+}
+
+async function fileResponse(
+  client: CmsClient,
+  path: string,
+  query: Record<string, string | null>,
+): Promise<Response> {
+  try {
+    const file = await client.file(path, query);
     return new Response(file.body, {
       headers: { 'Content-Type': file.contentType, 'Cache-Control': FILE_CACHE },
     });
@@ -92,7 +134,18 @@ export function createRedirectMatcher(client: CmsClient, options: RedirectMatche
         });
         await loading;
       }
-      return table.get(pathname) ?? table.get(pathname.replace(/\/+$/, '') || '/');
+      const exact = (path: string) => table.get(path) ?? table.get(path.replace(/\/+$/, '') || '/');
+      const found = exact(pathname);
+      if (found) {
+        return found;
+      }
+      // The feeds of a page that moved go with it: `/antigo/rss.xml` → `/novo/rss.xml`.
+      const tail = FOLLOWS_PAGE.exec(pathname);
+      const page = tail && exact(pathname.slice(0, tail.index));
+      if (!tail || !page) {
+        return undefined;
+      }
+      return page.to === null ? page : { ...page, from: pathname, to: withTail(page.to, tail[0]) };
     },
 
     /** The answer to a redirect: the new address, or `410` for a page gone. */
@@ -116,3 +169,13 @@ export function createRedirectMatcher(client: CmsClient, options: RedirectMatche
 }
 
 export type RedirectMatcher = ReturnType<typeof createRedirectMatcher>;
+
+/** What comes after the address of a page and goes along with its redirect: its feeds. */
+const FOLLOWS_PAGE = /\/(?:rss\.xml|atom\.xml|feed\.json)$/;
+
+/** The end of an address after another, before its query: `/novo?x=1` and `/rss.xml` → `/novo/rss.xml?x=1`. */
+function withTail(to: string, tail: string): string {
+  const at = to.search(/[?#]/);
+  const [path, rest] = at === -1 ? [to, ''] : [to.slice(0, at), to.slice(at)];
+  return `${path.replace(/\/+$/, '')}${tail}${rest}`;
+}

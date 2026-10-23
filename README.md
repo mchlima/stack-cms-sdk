@@ -218,6 +218,18 @@ const category = await cms.categories.get(Astro.params.path!);
 O slug sozinho também serve quando só uma categoria o tem. No `cmsLoader` do Astro, a categoria tem o `slugPath`
 como id. Mudar o slug ou a mãe no CMS gera os `301` sozinho, e eles chegam pelos redirecionamentos de sempre.
 
+O feed da categoria fica no endereço dela: `/guias/categoria/sites/desempenho/rss.xml` (e `atom.xml`, `feed.json`).
+No Next, o _middleware_ já serve. No Astro:
+
+```ts
+// src/pages/guias/categoria/[...path]/rss.xml.ts (e atom.xml.ts, feed.json.ts)
+export const getStaticPaths = () => cmsCategoryPaths(cms);
+export const GET = cmsFileEndpoint(cms);
+```
+
+O redirecionamento de uma categoria leva junto os feeds dela (`…/antiga/rss.xml` → `…/nova/rss.xml`). Na API, o
+arquivo é `feeds/category-sites.desempenho.rss`, com `.` no lugar de `/`.
+
 ### Menus
 
 ```ts

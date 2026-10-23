@@ -172,6 +172,12 @@ describe('@stack201/cms-sdk/astro (RS-08)', () => {
       'category-seo.rss',
       'category-seo.atom',
       'category-seo.json',
+      'category-sites.desempenho.rss',
+      'category-sites.desempenho.atom',
+      'category-sites.desempenho.json',
+      'category-apps.desempenho.rss',
+      'category-apps.desempenho.atom',
+      'category-apps.desempenho.json',
     ]);
     expect(await cmsPostSlugs(client)).toEqual(['lcp']);
     const markdown = await cmsMarkdownEndpoint(client)({ url: new URL(`${SITE}/guias/lcp.md`) });

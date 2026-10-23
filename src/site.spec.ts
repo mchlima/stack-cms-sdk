@@ -22,6 +22,31 @@ describe('what every site serves (RS-07, RS-08)', () => {
     expect((await siteFile(client, new URL(`${SITE}/sitemaps/x-pt-br.xml`)))?.status).toBe(404);
   });
 
+  it('the feed of a category at its address, by the slug path (RS-16)', async () => {
+    const { client, calls } = fakeApi({
+      '/resolve?path=%2Fguias%2Fcategoria%2Fsites%2Fdesempenho': () =>
+        Response.json({ kind: 'category', locale: 'pt-BR', slug: 'sites/desempenho' }),
+      '/resolve?path=%2Fguias%2Fcore-web-vitals': () =>
+        Response.json({ kind: 'post', locale: 'pt-BR', slug: 'core-web-vitals' }),
+      '/feeds/category-sites.desempenho.atom?locale=pt-BR': () =>
+        text('<feed/>', 'application/atom+xml; charset=utf-8'),
+      '/feeds/category-sites.desempenho.rss': () =>
+        text('<rss/>', 'application/rss+xml; charset=utf-8'),
+    });
+    const atom = await siteFile(
+      client,
+      new URL(`${SITE}/guias/categoria/sites/desempenho/atom.xml`),
+    );
+    expect(atom?.headers.get('Content-Type')).toBe('application/atom+xml; charset=utf-8');
+    expect(await atom?.text()).toBe('<feed/>');
+    expect(await siteFile(client, new URL(`${SITE}/guias/core-web-vitals/rss.xml`))).toBeNull();
+    expect(await siteFile(client, new URL(`${SITE}/nada/rss.xml`))).toBeNull();
+
+    // The name in the API, with `.` for `/`, at the same path too.
+    await siteFile(client, new URL(`${SITE}/feeds/category-sites.desempenho.rss`));
+    expect(calls).toContain('/feeds/category-sites.desempenho.rss');
+  });
+
   it('the Markdown of a post at its address with .md, and 404 for what is not a post', async () => {
     const { client } = fakeApi({
       '/resolve?path=%2Fblog%2Fcore-web-vitals': () =>
@@ -51,6 +76,13 @@ describe('what every site serves (RS-07, RS-08)', () => {
     expect(moved?.headers.get('Location')).toBe(`${SITE}/blog/novo`);
     expect((await redirects.response(new URL(`${SITE}/blog/saiu`), 1000))?.status).toBe(410);
     expect(await redirects.response(new URL(`${SITE}/blog/outro`), 2000)).toBeNull();
+    // The feeds of a page that moved go with it; other addresses under it do not.
+    const feed = await redirects.response(new URL(`${SITE}/blog/antigo/rss.xml`), 2000);
+    expect(feed?.headers.get('Location')).toBe(`${SITE}/blog/novo/rss.xml`);
+    expect((await redirects.response(new URL(`${SITE}/blog/saiu/feed.json`), 2000))?.status).toBe(
+      410,
+    );
+    expect(await redirects.response(new URL(`${SITE}/blog/antigo/outro`), 2000)).toBeNull();
     expect(calls.filter((c) => c === '/redirects')).toHaveLength(1);
 
     await redirects.response(new URL(`${SITE}/blog/outro`), 61_000);

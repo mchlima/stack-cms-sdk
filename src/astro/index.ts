@@ -204,12 +204,10 @@ export async function cmsFilePaths(client: CmsClient, kind: 'sitemaps' | 'feeds'
     return names.map((file) => ({ params: { file } }));
   }
   const [categories, tags] = await Promise.all([client.categories.list(), client.tags.list()]);
-  // The feed of a category is named by its slug: one shared by two categories has no feed of its own.
-  const count = new Map<string, number>();
-  categories.forEach((c) => count.set(c.slug, (count.get(c.slug) ?? 0) + 1));
+  // The feed of a category is named by its slug path, with `.` for `/`: `category-sites.desempenho`.
   const scopes = [
     'posts',
-    ...categories.filter((c) => count.get(c.slug) === 1).map((c) => `category-${c.slug}`),
+    ...categories.map((c) => `category-${c.slugPath.replaceAll('/', '.')}`),
     ...tags.map((t) => `tag-${t.slug}`),
   ];
   return scopes.flatMap((scope) =>
@@ -229,6 +227,12 @@ export async function cmsPostSlugs(client: CmsClient, options: { locale?: string
  *   // src/pages/guias/categoria/[...path].astro
  *   export const getStaticPaths = () => cmsCategoryPaths(cms);
  *   const category = await cms.categories.get(Astro.params.path);
+ *
+ * The feeds of a category at its own address take the same paths, with `cmsFileEndpoint`:
+ *
+ *   // src/pages/guias/categoria/[...path]/rss.xml.ts (and atom.xml.ts, feed.json.ts)
+ *   export const getStaticPaths = () => cmsCategoryPaths(cms);
+ *   export const GET = cmsFileEndpoint(cms);
  */
 export async function cmsCategoryPaths(client: CmsClient, options: { locale?: string } = {}) {
   const categories = await client.categories.list({ locale: options.locale });
