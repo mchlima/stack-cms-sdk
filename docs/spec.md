@@ -101,6 +101,10 @@ Decisões do Michel de 2026-10-23.
   atributos de uma definição `as const`; `blockTypes(customBlocks)` escreve o texto de um `.ts` com a interface
   `CmsBlockAttributes`, e `npx cms-sdk blocks-types --out src/cms-blocks.ts` faz o mesmo lendo a Delivery API
   (chave em `CMS_DELIVERY_KEY`). O componente de um bloco usa `BlockProps<CmsBlockAttributes['cta']>`.
+- **RS-15** **Valores seguros:** nenhum atributo chega a um componente (ou ao `renderHtml`) com `javascript:`, `data:`
+  ou `vbscript:`, mesmo com espaços ou caracteres de controle no meio; e um atributo do tipo `link` só chega com
+  `https://`, `http://`, `/caminho`, `#âncora`, `mailto:` ou `tel:`. O CMS já recusa esses valores; o SDK confere de
+  novo, e o valor recusado simplesmente não vem.
 
 ## 6. Critérios de aceite
 

@@ -46,6 +46,39 @@ describe('the blocks of the content (RS-10)', () => {
     expect(readBlock({ type: 'text', value: 'x' })).toBeNull();
   });
 
+  it('RS-15: never hands a code-running value or an unsafe link to a component', () => {
+    const element = {
+      type: 'element' as const,
+      tagName: 'div',
+      properties: {
+        dataBlock: 'cta',
+        dataHref: 'java\tscript:alert(1)',
+        dataLabel: 'Leia',
+        dataOutro: 'data:text/html,x',
+      },
+      children: [],
+    };
+    expect(readBlock(element)?.attributes).toEqual({ label: 'Leia' });
+    const definition = {
+      name: 'cta',
+      container: false,
+      attributes: [
+        { name: 'href', type: 'link' as const },
+        { name: 'label', type: 'string' as const },
+      ],
+    };
+    const ftp = {
+      ...element,
+      properties: { dataBlock: 'cta', dataHref: 'ftp://x.com/a', dataLabel: 'Oi' },
+    };
+    expect(readBlock(ftp, [definition])?.attributes).toEqual({ label: 'Oi' });
+    const ok = {
+      ...element,
+      properties: { dataBlock: 'cta', dataHref: '/planos', dataLabel: 'Oi' },
+    };
+    expect(readBlock(ok, [definition])?.attributes).toEqual({ href: '/planos', label: 'Oi' });
+  });
+
   it('RS-12: says which blocks of the space have no component', () => {
     expect(missingBlocks(customBlocks, { cta: () => '' })).toEqual(['destaque', 'banner']);
     expect(missingBlocks(customBlocks, ['cta', 'destaque', 'banner'])).toEqual([]);
