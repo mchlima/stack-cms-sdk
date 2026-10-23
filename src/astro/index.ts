@@ -238,13 +238,18 @@ export async function cmsPostSlugs(client: CmsClient, options: { locale?: string
  */
 export async function cmsCategoryPaths(client: CmsClient, options: { locale?: string } = {}) {
   const categories = await client.categories.list({ locale: options.locale });
-  // What comes before a category at the top is the prefix of every address (`/guias/categoria/`); after it,
-  // the slug path with `{path}`, the slug with `{slug}`.
-  const top = categories.find((c) => !c.slugPath.includes('/') && c.path.endsWith(`/${c.slug}`));
-  const prefix = top ? top.path.slice(0, -top.slug.length) : null;
+  // Around the slug of a category at the top is what every address has (`/guias/categoria/` and, in some models,
+  // `/` or `.html` after it); between them, the slug path with `{path}`, the slug with `{slug}`.
+  const top = categories.find((c) => !c.slugPath.includes('/') && c.path.includes(`/${c.slug}`));
+  const at = top ? top.path.lastIndexOf(`/${top.slug}`) + 1 : -1;
+  const prefix = top ? top.path.slice(0, at) : '';
+  const suffix = top ? top.path.slice(at + top.slug.length) : '';
   return categories.map((c) => ({
     params: {
-      path: prefix && c.path.startsWith(prefix) ? c.path.slice(prefix.length) : c.slugPath,
+      path:
+        top && c.path.startsWith(prefix) && c.path.endsWith(suffix)
+          ? c.path.slice(prefix.length, c.path.length - suffix.length)
+          : c.slugPath,
     },
   }));
 }

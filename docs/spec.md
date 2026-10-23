@@ -124,7 +124,7 @@ Decisões do Michel de 2026-10-23.
   `[...path]/rss.xml.ts` usa `cmsCategoryPaths` e `cmsFileEndpoint`. Mudar o slug ou a mãe gera os `301` no CMS, que
   chegam pelos redirecionamentos de sempre (`redirects()`, o _middleware_ e o aviso `redirects.updated`); o
   redirecionamento de uma página leva junto os feeds dela (`/antiga/rss.xml` → `/nova/rss.xml`), e a query do
-  pedido (`?locale=en`) vai junto quando o destino não tem a sua. O `siteFile` guarda por um minuto o que é cada
+  pedido (`?locale=en`) vai junto quando o destino é do próprio site e não tem a sua. O `siteFile` guarda por um minuto o que é cada
   endereço antes de `rss.xml`; no _middleware_, a API fora do ar deixa o pedido seguir para o site, e nas rotas
   feitas para os arquivos (`cmsFileRoute`, `cmsFileEndpoint`) é um erro, para o leitor de feeds receber `5xx` e o
   build estático falhar. Sites com o SDK até 0.4 não aceitam o nome novo do feed de subcategoria: atualize o SDK

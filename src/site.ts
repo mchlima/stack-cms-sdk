@@ -216,9 +216,10 @@ export function createRedirectMatcher(client: CmsClient, options: RedirectMatche
           headers: { 'Content-Type': 'text/plain; charset=utf-8' },
         });
       }
-      // The query goes along (`?locale=en` of a feed), unless the redirect has its own.
+      // In the site, the query goes along (`?locale=en` of a feed), unless the redirect has its own; never to
+      // another site.
       const location = new URL(redirect.to, url);
-      if (!location.search) {
+      if (!location.search && location.origin === url.origin) {
         location.search = url.search;
       }
       return new Response(null, {

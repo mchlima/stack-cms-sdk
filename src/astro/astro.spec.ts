@@ -118,6 +118,19 @@ describe('@stack201/cms-sdk/astro (RS-08)', () => {
       { params: { path: 'sites' } },
       { params: { path: 'desempenho' } },
     ]);
+
+    // Something after the slug in the model (`/categoria/{slug}/`).
+    const slash = fakeApi({
+      '/categories': () =>
+        Response.json([
+          { ...category('sites', 'sites'), path: '/categoria/sites/' },
+          { ...category('desempenho', 'sites/desempenho'), path: '/categoria/desempenho/' },
+        ]),
+    });
+    expect(await cmsCategoryPaths(slash.client)).toEqual([
+      { params: { path: 'sites' } },
+      { params: { path: 'desempenho' } },
+    ]);
   });
 
   it('RS-17: the menus enter as a collection by their key, or one at a time', async () => {
