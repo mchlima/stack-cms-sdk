@@ -32,7 +32,7 @@ Regras têm id `RS-NN` e critérios de aceite `CS-NN`. Decisões do Michel de 20
 - **RS-03** `createCmsClient({ apiKey, baseUrl?, locale?, fetch? })`. A chave `delivery` (ou `preview`, no modo de
   prévia) fica no servidor: o SDK avisa se for usado no navegador com uma chave `preview`.
 - **RS-04** As chamadas seguem a Delivery API: `space()`, `posts.list()`, `posts.get(slug)`, `tags`, `categories`,
-  `authors`, `resolve(path)`, `redirects()`, `search(q)`. Cada uma devolve os dados tipados ou um erro tipado
+  `authors`, `menus` (RS-17), `resolve(path)`, `redirects()`, `search(q)`. Cada uma devolve os dados tipados ou um erro tipado
   (`CmsNotFoundError`, `CmsAuthError`, `CmsRateLimitError`), e repassa `ETag` e `If-None-Match`.
 
 ## 3. Desenhar o conteúdo
@@ -55,7 +55,8 @@ Regras têm id `RS-NN` e critérios de aceite `CS-NN`. Decisões do Michel de 20
   - um helper de _middleware_ que aplica os redirecionamentos do CMS;
   - uma rota de revalidação que confere a assinatura do aviso e chama `revalidatePath` para os endereços afetados.
 - **RS-08** **Astro:**
-  - um _loader_ para as coleções de conteúdo: posts, tags, categorias e autores entram no build como coleções;
+  - um _loader_ para as coleções de conteúdo: posts, tags, categorias, autores e menus entram no build como
+    coleções;
   - as mesmas rotas prontas;
   - os redirecionamentos gerados para o `astro.config`.
     É o que o site da Stack201 vai usar no lugar dos MDX. O rebuild na Vercel vem de um _Deploy Hook_ cadastrado como
@@ -106,7 +107,40 @@ Decisões do Michel de 2026-10-23.
   `https://`, `http://`, `/caminho`, `#âncora`, `mailto:` ou `tel:`. O CMS já recusa esses valores; o SDK confere de
   novo, e o valor recusado simplesmente não vem.
 
-## 6. Critérios de aceite
+## 6. Categorias em vários níveis e menus
+
+Decisões do Michel de 2026-10-23.
+
+- **RS-16** **O caminho das mães:** toda categoria da Delivery (`CategoryItem`, `CategoryPage`, `CategoryLink` em
+  `parent`, `parents` e `children`, e cada categoria de `post.categories`) tem `slugPath`, os slugs das mães e o
+  dela (`sites/desempenho`), que é o `{path}` do modelo de endereço. `categories.get(ref)` aceita o `slugPath`, as
+  partes dele (`['sites', 'desempenho']`, como a rota _catch-all_ dá) ou, só com o modelo `{slug}`, o slug
+  sozinho; cada `/` vai como `%2F`, num parâmetro só. O `resolve` dá, para categorias, o que está no endereço em `slug` e o caminho em `slugPath`. O site
+  serve a categoria numa rota de vários níveis: `app/…/categoria/[...path]` no Next e
+  `src/pages/…/categoria/[...path].astro` no Astro, com `cmsCategoryPaths(cms)` no `getStaticPaths`. No _loader_
+  do Astro, a categoria tem o `slugPath` como id. O feed de uma categoria tem o caminho, com `.` no lugar de `/`
+  (`feeds/category-sites.desempenho.rss`), e também fica no endereço da categoria (`…/sites/desempenho/rss.xml`,
+  `atom.xml`, `feed.json`): `siteFile` e o _middleware_ do Next acham a categoria pelo `resolve`, e no Astro a rota
+  `[...path]/rss.xml.ts` usa `cmsCategoryPaths` e `cmsFileEndpoint`. Mudar o slug ou a mãe gera os `301` no CMS, que
+  chegam pelos redirecionamentos de sempre (`redirects()`, o _middleware_ e o aviso `redirects.updated`); o
+  redirecionamento de uma página leva junto os feeds dela (`/antiga/rss.xml` → `/nova/rss.xml`), e a query do
+  pedido (`?locale=en`) vai junto quando o destino é do próprio site e não tem a sua. O `siteFile` guarda por um minuto o que é cada
+  endereço antes de `rss.xml`; no _middleware_, a API fora do ar deixa o pedido seguir para o site, e nas rotas
+  feitas para os arquivos (`cmsFileRoute`, `cmsFileEndpoint`) é um erro, para o leitor de feeds receber `5xx` e o
+  build estático falhar. Sites com o SDK até 0.4 não aceitam o nome novo do feed de subcategoria: atualize o SDK
+  junto com a API.
+- **RS-17** **Menus:** `menus.list()` dá `{ key, name, description }` de cada menu, e
+  `menus.get(key, { locale })` dá o menu numa língua com a árvore de itens já resolvida (`label`, `kind`, `href`,
+  `url`, `external`, `targetId`, `children`), sem os ocultos; os dois repassam o `ETag` como as outras chamadas. Os
+  tipos `Menu`, `MenuItem`, `MenuItemKind` e `MenuSummary` vêm do `openapi.json`. No Astro, `cmsMenu(cms, key,
+{ locale })` lê um menu no build, e `cmsLoader(cms, { collection: 'menus' })` traz todos como coleção (id: a
+  chave, ou `<locale>/<chave>`). O aviso `menu.updated` não traz `paths`: `menuChangeOf(event)` dá `key`,
+  `previousKey` (renomeado), `deleted` e `reason` (`menu`, ou `pages` quando uma página do menu mudou de nome ou de
+  endereço, saiu do ar, ganhou ou perdeu uma subcategoria, ou o endereço do site mudou); no Next, `createRevalidateRoute` revalida o que `onMenuUpdated(menu,
+event)` devolver (e o site chama `revalidateTag` ali, se marca a busca dos menus) ou, sem a opção, o site todo
+  (`revalidatePath('/', 'layout')`), porque o menu costuma estar no _layout_.
+
+## 7. Critérios de aceite
 
 - **CS-01** Os tipos batem com o `openapi.json` publicado; mudar a API sem regenerar o SDK quebra a CI (RS-02).
 - **CS-02** `posts.get` de um endereço que não existe dá `CmsNotFoundError`; chave errada dá `CmsAuthError` (RS-04).
@@ -121,6 +155,14 @@ Decisões do Michel de 2026-10-23.
 - **CS-09** Um bloco do space sem componente não quebra a página: o conteúdo fica, o bloco sem conteúdo some e há
   um aviso em desenvolvimento (RS-12).
 
-## 7. O que o Michel precisa providenciar
+- **CS-10** `categories.get('sites/desempenho')` e `categories.get(['sites', 'desempenho'])` chamam
+  `/categories/sites%2Fdesempenho`; o _loader_ dá o `slugPath`, e `cmsCategoryPaths` dá o que o endereço tem: o `slugPath` com `{path}`, o slug com
+  `{slug}` (RS-16).
+- **CS-12** `…/sites/desempenho/rss.xml` serve `feeds/category-sites.desempenho.rss`, e o redirecionamento de
+  `/sites/desempenho` leva `/sites/desempenho/rss.xml` ao novo endereço com `/rss.xml` (RS-16).
+- **CS-11** Um aviso `menu.updated` revalida o _layout_ inteiro, ou só o que `onMenuUpdated` disser; os outros
+  avisos continuam revalidando os `paths` que trazem (RS-17).
+
+## 8. O que o Michel precisa providenciar
 
 A organização `@stack201` no npm e um token de publicação para o GitHub Actions do repositório.

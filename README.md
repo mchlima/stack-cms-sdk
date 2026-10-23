@@ -190,3 +190,76 @@ export const GET = cmsFileEndpoint(cms);
 `cmsPostSlugs(cms)` alimenta o `getStaticPaths` e `cmsAstroRedirects(cms)` dá os `redirects` do `astro.config`. Para
 publicar no CMS e o site se refazer, crie um _Deploy Hook_ no projeto da Vercel e cadastre o endereço dele como webhook
 do space.
+
+### Categorias em vários níveis
+
+Com o modelo de endereço `{path}` (`/guias/categoria/sites/desempenho`), cada categoria tem `slugPath`
+(`sites/desempenho`), também nas mães, nas filhas e nas categorias de cada post. A página da categoria fica numa rota
+de vários níveis, e `categories.get` aceita o caminho inteiro ou as partes dele (cada `/` vai como `%2F`):
+
+```tsx
+// Next: app/guias/categoria/[...path]/page.tsx
+export default async function Page({ params }: { params: Promise<{ path: string[] }> }) {
+  const category = await cms.categories.get((await params).path);
+  // category.parents, category.children (cada um com slugPath e url), category.posts…
+}
+```
+
+```astro
+---
+// Astro: src/pages/guias/categoria/[...path].astro
+import { cmsCategoryPaths } from '@stack201/cms-sdk/astro';
+
+export const getStaticPaths = () => cmsCategoryPaths(cms);
+const category = await cms.categories.get(Astro.params.path!);
+---
+```
+
+Com o modelo `{slug}`, o slug sozinho também serve, porque ali ele é único. Com `{path}`, use sempre o caminho: o slug
+sozinho não acha uma subcategoria. A mesma rota `[...path]` serve os dois modelos: `cmsCategoryPaths` dá o que o
+endereço tem depois do prefixo (o caminho com `{path}`, o slug com `{slug}`). No `cmsLoader` do Astro, a categoria tem o `slugPath`
+como id. Mudar o slug ou a mãe no CMS gera os `301` sozinho, e eles chegam pelos redirecionamentos de sempre.
+
+O feed da categoria fica no endereço dela: `/guias/categoria/sites/desempenho/rss.xml` (e `atom.xml`, `feed.json`).
+No Next, o _middleware_ já serve. No Astro:
+
+```ts
+// src/pages/guias/categoria/[...path]/rss.xml.ts (e atom.xml.ts, feed.json.ts)
+export const getStaticPaths = () => cmsCategoryPaths(cms);
+export const GET = cmsFileEndpoint(cms);
+```
+
+O redirecionamento de uma categoria leva junto os feeds dela (`…/antiga/rss.xml` → `…/nova/rss.xml`). Na API, o
+arquivo é `feeds/category-sites.desempenho.rss`, com `.` no lugar de `/`.
+
+### Menus
+
+```ts
+const menus = await cms.menus.list(); // [{ key, name, description }]
+const menu = await cms.menus.get('principal', { locale: 'pt-BR' });
+// menu.items: [{ label, kind, href, url, external, children }], já sem os itens ocultos
+```
+
+No Astro, `cmsMenu(cms, 'principal', { locale })` lê o menu no build, ou
+`cmsLoader(cms, { collection: 'menus' })` traz todos como coleção (`getEntry('menus', 'principal')`).
+
+O aviso `menu.updated` chega quando o menu muda e também quando uma página dele muda de nome ou de endereço, sai do
+ar ou ganha ou perde uma subcategoria (`menuChangeOf(event).reason` é `'pages'`). Ele não traz páginas. No Next, `createRevalidateRoute` revalida o site todo
+(`revalidatePath('/', 'layout')`) por padrão, porque o menu costuma estar no _layout_; `onMenuUpdated` troca isso
+pelo que o site disser:
+
+```ts
+import { revalidatePath, revalidateTag } from 'next/cache';
+
+export const POST = createRevalidateRoute({
+  secret: process.env.CMS_WEBHOOK_SECRET!,
+  revalidatePath,
+  // A busca do menu marcada com cms.menus.get(key, {}, { init: { next: { tags: [`menu:${key}`] } } })
+  onMenuUpdated: (menu) => {
+    revalidateTag(`menu:${menu.key}`, 'max');
+    if (menu.previousKey) revalidateTag(`menu:${menu.previousKey}`, 'max');
+  },
+});
+```
+
+Fora do Next, `menuChangeOf(event)` (de `@stack201/cms-sdk/webhooks`) dá `key`, `previousKey` e `deleted` do aviso.

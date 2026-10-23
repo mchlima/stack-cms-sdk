@@ -79,9 +79,8 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 80,
-              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              "maxLength": 800,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\/[a-z0-9]+(?:-[a-z0-9]+)*)*$"
             }
           },
           {
@@ -643,6 +642,100 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AuthorPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/menus": {
+      "get": {
+        "operationId": "deliveryMenus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryMenuSummary"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deliveryKey": []
+          }
+        ],
+        "tags": [
+          "Delivery"
+        ]
+      }
+    },
+    "/delivery/v1/menus/{key}": {
+      "get": {
+        "operationId": "deliveryMenu",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryMenu"
                 }
               }
             }
@@ -1335,6 +1428,10 @@
           "url": {
             "type": "string"
           },
+          "slugPath": {
+            "type": "string",
+            "description": "Os slugs das categorias-mãe e o da categoria (sites/desempenho): o que vai no {path} do endereço e em GET /categories/{slug}."
+          },
           "parentId": {
             "nullable": true,
             "type": "string",
@@ -1357,9 +1454,43 @@
           "name",
           "path",
           "url",
+          "slugPath",
           "parentId",
           "position",
           "posts"
+        ]
+      },
+      "CategoryLink": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "slugPath": {
+            "type": "string",
+            "description": "Os slugs das categorias-mãe e o da categoria (sites/desempenho): o que vai no {path} do endereço e em GET /categories/{slug}."
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "path",
+          "url",
+          "slugPath"
         ]
       },
       "CategoryPage": {
@@ -1380,6 +1511,10 @@
           },
           "url": {
             "type": "string"
+          },
+          "slugPath": {
+            "type": "string",
+            "description": "Os slugs das categorias-mãe e o da categoria (sites/desempenho): o que vai no {path} do endereço e em GET /categories/{slug}."
           },
           "description": {
             "nullable": true,
@@ -1452,20 +1587,20 @@
             "nullable": true,
             "allOf": [
               {
-                "$ref": "#/components/schemas/TermLink"
+                "$ref": "#/components/schemas/CategoryLink"
               }
             ]
           },
           "parents": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TermLink"
+              "$ref": "#/components/schemas/CategoryLink"
             }
           },
           "children": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TermLink"
+              "$ref": "#/components/schemas/CategoryLink"
             }
           }
         },
@@ -1475,6 +1610,7 @@
           "name",
           "path",
           "url",
+          "slugPath",
           "description",
           "descriptionHtml",
           "cover",
@@ -1560,6 +1696,111 @@
         "required": [
           "name",
           "type"
+        ]
+      },
+      "DeliveryMenu": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryMenuItem"
+            }
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "description",
+          "locale",
+          "items"
+        ]
+      },
+      "DeliveryMenuItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "none",
+              "url",
+              "post",
+              "category",
+              "tag",
+              "author"
+            ],
+            "description": "Para onde o item leva: nada (só agrupa), um link (url) ou uma página do space (targetId)."
+          },
+          "href": {
+            "nullable": true,
+            "type": "string"
+          },
+          "url": {
+            "nullable": true,
+            "type": "string"
+          },
+          "external": {
+            "type": "boolean"
+          },
+          "targetId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryMenuItem"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "kind",
+          "href",
+          "url",
+          "external",
+          "targetId",
+          "children"
+        ]
+      },
+      "DeliveryMenuSummary": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "description"
         ]
       },
       "DeliveryRedirect": {
@@ -2020,6 +2261,10 @@
                 "url": {
                   "type": "string"
                 },
+                "slugPath": {
+                  "type": "string",
+                  "description": "Os slugs das categorias-mãe e o da categoria (sites/desempenho): o que vai no {path} do endereço e em GET /categories/{slug}."
+                },
                 "primary": {
                   "type": "boolean"
                 }
@@ -2030,6 +2275,7 @@
                 "name",
                 "path",
                 "url",
+                "slugPath",
                 "primary"
               ]
             }
@@ -2174,6 +2420,10 @@
                 "url": {
                   "type": "string"
                 },
+                "slugPath": {
+                  "type": "string",
+                  "description": "Os slugs das categorias-mãe e o da categoria (sites/desempenho): o que vai no {path} do endereço e em GET /categories/{slug}."
+                },
                 "primary": {
                   "type": "boolean"
                 }
@@ -2184,6 +2434,7 @@
                 "name",
                 "path",
                 "url",
+                "slugPath",
                 "primary"
               ]
             }
@@ -2394,6 +2645,9 @@
               "slug": {
                 "nullable": true,
                 "type": "string"
+              },
+              "slugPath": {
+                "type": "string"
               }
             },
             "required": [
@@ -2550,7 +2804,8 @@
               "post.unpublished",
               "taxonomy.updated",
               "space.updated",
-              "redirects.updated"
+              "redirects.updated",
+              "menu.updated"
             ]
           },
           "occurredAt": {

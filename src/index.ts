@@ -15,6 +15,7 @@ export {
   type RedirectMatcherOptions,
   SITE_FILE,
   siteFile,
+  type SiteFileOptions,
   siteMarkdown,
 } from './site.js';
 export * from './content/index.js';

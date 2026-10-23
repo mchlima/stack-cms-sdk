@@ -2,7 +2,13 @@ import { createHmac } from 'node:crypto';
 
 import { describe, expect, it } from 'vitest';
 
-import { CmsWebhookError, verifyCmsWebhook, verifyCmsWebhookBody } from './webhooks.js';
+import {
+  CmsWebhookError,
+  menuChangeOf,
+  verifyCmsWebhook,
+  verifyCmsWebhookBody,
+} from './webhooks.js';
+import type { SitePayload } from './types.js';
 
 const SECRET = `whsec_${Buffer.from('segredo do webhook').toString('base64')}`;
 const BODY = JSON.stringify({
@@ -76,5 +82,40 @@ describe('verifyCmsWebhook (RS-09)', () => {
     await expect(verifyCmsWebhookBody(BODY, headers, SECRET, { now: NOW })).resolves.toMatchObject({
       type: 'post.published',
     });
+  });
+});
+
+describe('menuChangeOf (RS-17)', () => {
+  const event = (type: SitePayload['type'], data: Record<string, unknown>): SitePayload => ({
+    id: 'e1',
+    type,
+    occurredAt: '2026-10-23T10:00:00.000Z',
+    space: { id: 's1', slug: 'blog' },
+    data,
+    paths: [],
+    urls: [],
+  });
+
+  it('reads the menu of a menu.updated notice, renamed or deleted', () => {
+    expect(
+      menuChangeOf(event('menu.updated', { menuId: 'm1', key: 'topo', previousKey: 'principal' })),
+    ).toEqual({
+      menuId: 'm1',
+      key: 'topo',
+      previousKey: 'principal',
+      deleted: false,
+      reason: 'menu',
+    });
+    expect(
+      menuChangeOf(event('menu.updated', { menuId: 'm1', key: 'topo', deleted: true })),
+    ).toEqual({ menuId: 'm1', key: 'topo', previousKey: null, deleted: true, reason: 'menu' });
+    // A page it shows changed (RN-55 of the API).
+    expect(
+      menuChangeOf(event('menu.updated', { menuId: 'm1', key: 'topo', reason: 'pages' }))?.reason,
+    ).toBe('pages');
+  });
+
+  it('is null for any other notice', () => {
+    expect(menuChangeOf(event('redirects.updated', {}))).toBeNull();
   });
 });

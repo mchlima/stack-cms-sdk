@@ -1,6 +1,6 @@
 import type { CmsClient } from '../client.js';
 import { siteFile, siteMarkdown } from '../site.js';
-import type { AuthorPage, CategoryPage, Post, TagPage } from '../types.js';
+import type { AuthorPage, CategoryPage, Menu, Post, TagPage } from '../types.js';
 
 /**
  * RS-08: Astro without depending on the `astro` package. The types below are the part of Astro these
@@ -26,10 +26,10 @@ export interface CmsLoaderContext {
   logger: { info(message: string): void };
 }
 
-export type CmsCollection = 'posts' | 'tags' | 'categories' | 'authors';
+export type CmsCollection = 'posts' | 'tags' | 'categories' | 'authors' | 'menus';
 
 export interface CmsLoaderOptions {
-  /** What the collection brings: whole posts, or the pages of the tags, categories or authors. */
+  /** What the collection brings: whole posts, the pages of the tags, categories or authors, or the menus. */
   collection: CmsCollection;
   /** The languages to load; the default language of the space when not said. */
   locales?: string[];
@@ -37,7 +37,7 @@ export interface CmsLoaderOptions {
   concurrency?: number;
 }
 
-type Loaded = Post | TagPage | CategoryPage | AuthorPage;
+type Loaded = Post | TagPage | CategoryPage | AuthorPage | Menu;
 
 /** Runs `task` over `items`, at most `limit` at a time, keeping the order. */
 async function inBatches<T, R>(
@@ -57,11 +57,21 @@ async function inBatches<T, R>(
   return results;
 }
 
-/** Every slug of the collection in a language, following the pages of the list. */
+/**
+ * What names each entry of the collection in a language, following the pages of the list: the slug of
+ * a post, tag or author, the `slugPath` of a category (`sites/desempenho`), the key of a menu.
+ */
 async function slugsOf(client: CmsClient, collection: CmsCollection, locale: string | undefined) {
-  if (collection !== 'posts') {
-    const list = await client[collection].list({ locale });
-    return list.map((item) => item.slug);
+  switch (collection) {
+    case 'categories':
+      return (await client.categories.list({ locale })).map((item) => item.slugPath);
+    case 'menus':
+      return (await client.menus.list()).map((item) => item.key);
+    case 'tags':
+    case 'authors':
+      return (await client[collection].list({ locale })).map((item) => item.slug);
+    case 'posts':
+      break;
   }
   const slugs: string[] = [];
   let cursor: string | undefined;
@@ -71,6 +81,14 @@ async function slugsOf(client: CmsClient, collection: CmsCollection, locale: str
     cursor = page.next ?? undefined;
   } while (cursor);
   return slugs;
+}
+
+/** The id of an entry: the `slugPath` of a category, the key of a menu, the slug of the rest. */
+function idOf(page: Loaded): string {
+  if ('key' in page) {
+    return page.key;
+  }
+  return 'slugPath' in page ? page.slugPath : page.slug;
 }
 
 async function load(
@@ -88,6 +106,8 @@ async function load(
       return client.categories.get(slug, { locale });
     case 'authors':
       return client.authors.get(slug, { locale });
+    case 'menus':
+      return client.menus.get(slug, { locale });
   }
 }
 
@@ -98,7 +118,8 @@ async function load(
  *   // src/content.config.ts
  *   const posts = defineCollection({ loader: cmsLoader(cms, { collection: 'posts' }) });
  *
- * With more than one language, the id is `<locale>/<slug>`; with one, the slug.
+ * With more than one language, the id is `<locale>/<slug>`; with one, the slug. A category is named
+ * by its `slugPath` (`sites/desempenho`), for a `[...path]` route; a menu, by its key.
  */
 export function cmsLoader(client: CmsClient, options: CmsLoaderOptions) {
   return {
@@ -113,7 +134,7 @@ export function cmsLoader(client: CmsClient, options: CmsLoaderOptions) {
           load(client, options.collection, slug, locale),
         );
         for (const page of pages) {
-          const id = many && locale ? `${locale}/${page.slug}` : page.slug;
+          const id = many && locale ? `${locale}/${idOf(page)}` : idOf(page);
           const data = await context.parseData({ id, data: page });
           context.store.set({
             id,
@@ -161,7 +182,8 @@ export interface CmsEndpointContext {
  */
 export function cmsFileEndpoint(client: CmsClient) {
   return async ({ url }: CmsEndpointContext): Promise<Response> =>
-    (await siteFile(client, url)) ?? new Response('Não encontrado.', { status: 404 });
+    (await siteFile(client, url, { strict: true })) ??
+    new Response('Não encontrado.', { status: 404 });
 }
 
 /** RS-08: the Markdown of a post at its address with `.md` (`src/pages/blog/[slug].md.ts`). */
@@ -183,9 +205,10 @@ export async function cmsFilePaths(client: CmsClient, kind: 'sitemaps' | 'feeds'
     return names.map((file) => ({ params: { file } }));
   }
   const [categories, tags] = await Promise.all([client.categories.list(), client.tags.list()]);
+  // The feed of a category is named by its slug path, with `.` for `/`: `category-sites.desempenho`.
   const scopes = [
     'posts',
-    ...categories.map((c) => `category-${c.slug}`),
+    ...categories.map((c) => `category-${c.slugPath.replaceAll('/', '.')}`),
     ...tags.map((t) => `tag-${t.slug}`),
   ];
   return scopes.flatMap((scope) =>
@@ -196,6 +219,49 @@ export async function cmsFilePaths(client: CmsClient, kind: 'sitemaps' | 'feeds'
 /** The slugs of the published posts, for the `getStaticPaths` of the pages and of the `.md`. */
 export async function cmsPostSlugs(client: CmsClient, options: { locale?: string } = {}) {
   return slugsOf(client, 'posts', options.locale);
+}
+
+/**
+ * RS-16: the `getStaticPaths` of the pages of the categories, at a route `[...path].astro`: `path` is what the
+ * address of the category has after its prefix, the `slugPath` with the model `{path}` (`sites/desempenho`) or the
+ * slug with `{slug}` (`desempenho`). `categories.get` takes either.
+ *
+ *   // src/pages/guias/categoria/[...path].astro
+ *   export const getStaticPaths = () => cmsCategoryPaths(cms);
+ *   const category = await cms.categories.get(Astro.params.path);
+ *
+ * The feeds of a category at its own address take the same paths, with `cmsFileEndpoint`:
+ *
+ *   // src/pages/guias/categoria/[...path]/rss.xml.ts (and atom.xml.ts, feed.json.ts)
+ *   export const getStaticPaths = () => cmsCategoryPaths(cms);
+ *   export const GET = cmsFileEndpoint(cms);
+ */
+export async function cmsCategoryPaths(client: CmsClient, options: { locale?: string } = {}) {
+  const categories = await client.categories.list({ locale: options.locale });
+  // Around the slug of a category at the top is what every address has (`/guias/categoria/` and, in some models,
+  // `/` or `.html` after it); between them, the slug path with `{path}`, the slug with `{slug}`.
+  const top = categories.find((c) => !c.slugPath.includes('/') && c.path.includes(`/${c.slug}`));
+  const at = top ? top.path.lastIndexOf(`/${top.slug}`) + 1 : -1;
+  const prefix = top ? top.path.slice(0, at) : '';
+  const suffix = top ? top.path.slice(at + top.slug.length) : '';
+  return categories.map((c) => ({
+    params: {
+      path:
+        top && c.path.startsWith(prefix) && c.path.endsWith(suffix)
+          ? c.path.slice(prefix.length, c.path.length - suffix.length)
+          : c.slugPath,
+    },
+  }));
+}
+
+/**
+ * RS-17: a menu in the build, with its tree of items already resolved (`href`, `external`, `children`):
+ *
+ *   // src/components/Header.astro
+ *   const menu = await cmsMenu(cms, 'principal', { locale: 'pt-BR' });
+ */
+export function cmsMenu(client: CmsClient, key: string, options: { locale?: string } = {}) {
+  return client.menus.get(key, { locale: options.locale });
 }
 
 /**

@@ -3,11 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { fakeApi, text } from '../test/fake-api.js';
 import {
   cmsAstroRedirects,
+  cmsCategoryPaths,
   cmsFileEndpoint,
   cmsFilePaths,
   cmsLoader,
   type CmsLoaderContext,
   cmsMarkdownEndpoint,
+  cmsMenu,
   cmsPostSlugs,
 } from './index.js';
 
@@ -79,6 +81,91 @@ describe('@stack201/cms-sdk/astro (RS-08)', () => {
     expect(entries.get('en/google')?.rendered).toBeUndefined();
   });
 
+  it('RS-16: categories are named by their slugPath, read with it and give the paths of [...path]', async () => {
+    const category = (slug: string, slugPath: string) => ({
+      slug,
+      slugPath,
+      name: slug,
+      path: `/guias/categoria/${slugPath}`,
+      url: `${SITE}/guias/categoria/${slugPath}`,
+    });
+    const { client, calls } = fakeApi({
+      '/categories': () =>
+        Response.json([category('sites', 'sites'), category('desempenho', 'sites/desempenho')]),
+      '/categories/sites': () => Response.json(category('sites', 'sites')),
+      '/categories/sites%2Fdesempenho': () =>
+        Response.json(category('desempenho', 'sites/desempenho')),
+    });
+    const { ctx, entries } = context();
+    await cmsLoader(client, { collection: 'categories' }).load(ctx);
+
+    expect([...entries.keys()].sort()).toEqual(['sites', 'sites/desempenho']);
+    expect(calls).toContain('/categories/sites%2Fdesempenho');
+    expect(await cmsCategoryPaths(client)).toEqual([
+      { params: { path: 'sites' } },
+      { params: { path: 'sites/desempenho' } },
+    ]);
+
+    // With {slug}, the address has the slug alone, even with a prefix like the slug of a parent.
+    const flat = fakeApi({
+      '/categories': () =>
+        Response.json([
+          { ...category('sites', 'sites'), path: '/sites/sites' },
+          { ...category('desempenho', 'sites/desempenho'), path: '/sites/desempenho' },
+        ]),
+    });
+    expect(await cmsCategoryPaths(flat.client)).toEqual([
+      { params: { path: 'sites' } },
+      { params: { path: 'desempenho' } },
+    ]);
+
+    // Something after the slug in the model (`/categoria/{slug}/`).
+    const slash = fakeApi({
+      '/categories': () =>
+        Response.json([
+          { ...category('sites', 'sites'), path: '/categoria/sites/' },
+          { ...category('desempenho', 'sites/desempenho'), path: '/categoria/desempenho/' },
+        ]),
+    });
+    expect(await cmsCategoryPaths(slash.client)).toEqual([
+      { params: { path: 'sites' } },
+      { params: { path: 'desempenho' } },
+    ]);
+  });
+
+  it('RS-17: the menus enter as a collection by their key, or one at a time', async () => {
+    const menu = (key: string, locale: string) => ({
+      key,
+      name: key,
+      description: null,
+      locale,
+      items: [
+        {
+          id: 'i1',
+          label: 'Guias',
+          kind: 'url',
+          href: '/guias',
+          url: `${SITE}/guias`,
+          external: false,
+          targetId: null,
+          children: [],
+        },
+      ],
+    });
+    const { client } = fakeApi({
+      '/menus': () => Response.json([{ key: 'principal', name: 'Principal', description: null }]),
+      '/menus/principal?locale=pt-BR': () => Response.json(menu('principal', 'pt-BR')),
+      '/menus/principal?locale=en': () => Response.json(menu('principal', 'en')),
+    });
+    const { ctx, entries } = context();
+    await cmsLoader(client, { collection: 'menus', locales: ['pt-BR', 'en'] }).load(ctx);
+
+    expect([...entries.keys()].sort()).toEqual(['en/principal', 'pt-BR/principal']);
+    expect(entries.get('en/principal')?.data).toMatchObject({ locale: 'en' });
+    expect(entries.get('en/principal')?.rendered).toBeUndefined();
+    expect((await cmsMenu(client, 'principal', { locale: 'pt-BR' })).items[0]?.href).toBe('/guias');
+  });
+
   it('the files as endpoints, and their static paths from the index of the CMS', async () => {
     const { client } = fakeApi({
       '/sitemap.xml': () =>
@@ -86,7 +173,12 @@ describe('@stack201/cms-sdk/astro (RS-08)', () => {
           `<sitemapindex><sitemap><loc>${SITE}/sitemaps/posts-pt-br.xml</loc></sitemap><sitemap><loc>${SITE}/sitemaps/tags-pt-br.xml</loc></sitemap></sitemapindex>`,
           'application/xml; charset=utf-8',
         ),
-      '/categories': () => Response.json([{ slug: 'seo' }]),
+      '/categories': () =>
+        Response.json([
+          { slug: 'seo', slugPath: 'seo' },
+          { slug: 'desempenho', slugPath: 'sites/desempenho' },
+          { slug: 'desempenho', slugPath: 'apps/desempenho' },
+        ]),
       '/tags': () => Response.json([]),
       '/posts': () => Response.json({ items: [{ slug: 'lcp' }], next: null }),
       '/resolve?path=%2Fguias%2Flcp': () =>
@@ -107,6 +199,12 @@ describe('@stack201/cms-sdk/astro (RS-08)', () => {
       'category-seo.rss',
       'category-seo.atom',
       'category-seo.json',
+      'category-sites.desempenho.rss',
+      'category-sites.desempenho.atom',
+      'category-sites.desempenho.json',
+      'category-apps.desempenho.rss',
+      'category-apps.desempenho.atom',
+      'category-apps.desempenho.json',
     ]);
     expect(await cmsPostSlugs(client)).toEqual(['lcp']);
     const markdown = await cmsMarkdownEndpoint(client)({ url: new URL(`${SITE}/guias/lcp.md`) });
