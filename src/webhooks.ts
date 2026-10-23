@@ -109,3 +109,27 @@ export async function verifyCmsWebhook(
 ): Promise<SitePayload> {
   return verifyCmsWebhookBody(await request.text(), request.headers, secret, options);
 }
+
+/**
+ * What changed in a `menu.updated` notice, which brings no `paths`: the menu (`key`), its old key when
+ * it was renamed (`previousKey`) and whether it was deleted. `null` for any other notice.
+ */
+export interface MenuChange {
+  menuId: string;
+  key: string;
+  previousKey: string | null;
+  deleted: boolean;
+}
+
+export function menuChangeOf(event: SitePayload): MenuChange | null {
+  if (event.type !== 'menu.updated') {
+    return null;
+  }
+  const { menuId, key, previousKey, deleted } = event.data;
+  return {
+    menuId: typeof menuId === 'string' ? menuId : '',
+    key: typeof key === 'string' ? key : '',
+    previousKey: typeof previousKey === 'string' ? previousKey : null,
+    deleted: deleted === true,
+  };
+}

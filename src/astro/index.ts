@@ -1,6 +1,6 @@
 import type { CmsClient } from '../client.js';
 import { siteFile, siteMarkdown } from '../site.js';
-import type { AuthorPage, CategoryPage, Post, TagPage } from '../types.js';
+import type { AuthorPage, CategoryPage, Menu, Post, TagPage } from '../types.js';
 
 /**
  * RS-08: Astro without depending on the `astro` package. The types below are the part of Astro these
@@ -26,10 +26,10 @@ export interface CmsLoaderContext {
   logger: { info(message: string): void };
 }
 
-export type CmsCollection = 'posts' | 'tags' | 'categories' | 'authors';
+export type CmsCollection = 'posts' | 'tags' | 'categories' | 'authors' | 'menus';
 
 export interface CmsLoaderOptions {
-  /** What the collection brings: whole posts, or the pages of the tags, categories or authors. */
+  /** What the collection brings: whole posts, the pages of the tags, categories or authors, or the menus. */
   collection: CmsCollection;
   /** The languages to load; the default language of the space when not said. */
   locales?: string[];
@@ -37,7 +37,7 @@ export interface CmsLoaderOptions {
   concurrency?: number;
 }
 
-type Loaded = Post | TagPage | CategoryPage | AuthorPage;
+type Loaded = Post | TagPage | CategoryPage | AuthorPage | Menu;
 
 /** Runs `task` over `items`, at most `limit` at a time, keeping the order. */
 async function inBatches<T, R>(
@@ -57,11 +57,21 @@ async function inBatches<T, R>(
   return results;
 }
 
-/** Every slug of the collection in a language, following the pages of the list. */
+/**
+ * What names each entry of the collection in a language, following the pages of the list: the slug of
+ * a post, tag or author, the `slugPath` of a category (`sites/desempenho`), the key of a menu.
+ */
 async function slugsOf(client: CmsClient, collection: CmsCollection, locale: string | undefined) {
-  if (collection !== 'posts') {
-    const list = await client[collection].list({ locale });
-    return list.map((item) => item.slug);
+  switch (collection) {
+    case 'categories':
+      return (await client.categories.list({ locale })).map((item) => item.slugPath);
+    case 'menus':
+      return (await client.menus.list()).map((item) => item.key);
+    case 'tags':
+    case 'authors':
+      return (await client[collection].list({ locale })).map((item) => item.slug);
+    case 'posts':
+      break;
   }
   const slugs: string[] = [];
   let cursor: string | undefined;
@@ -71,6 +81,14 @@ async function slugsOf(client: CmsClient, collection: CmsCollection, locale: str
     cursor = page.next ?? undefined;
   } while (cursor);
   return slugs;
+}
+
+/** The id of an entry: the `slugPath` of a category, the key of a menu, the slug of the rest. */
+function idOf(page: Loaded): string {
+  if ('key' in page) {
+    return page.key;
+  }
+  return 'slugPath' in page ? page.slugPath : page.slug;
 }
 
 async function load(
@@ -88,6 +106,8 @@ async function load(
       return client.categories.get(slug, { locale });
     case 'authors':
       return client.authors.get(slug, { locale });
+    case 'menus':
+      return client.menus.get(slug, { locale });
   }
 }
 
@@ -98,7 +118,8 @@ async function load(
  *   // src/content.config.ts
  *   const posts = defineCollection({ loader: cmsLoader(cms, { collection: 'posts' }) });
  *
- * With more than one language, the id is `<locale>/<slug>`; with one, the slug.
+ * With more than one language, the id is `<locale>/<slug>`; with one, the slug. A category is named
+ * by its `slugPath` (`sites/desempenho`), for a `[...path]` route; a menu, by its key.
  */
 export function cmsLoader(client: CmsClient, options: CmsLoaderOptions) {
   return {
@@ -113,7 +134,7 @@ export function cmsLoader(client: CmsClient, options: CmsLoaderOptions) {
           load(client, options.collection, slug, locale),
         );
         for (const page of pages) {
-          const id = many && locale ? `${locale}/${page.slug}` : page.slug;
+          const id = many && locale ? `${locale}/${idOf(page)}` : idOf(page);
           const data = await context.parseData({ id, data: page });
           context.store.set({
             id,
@@ -183,9 +204,12 @@ export async function cmsFilePaths(client: CmsClient, kind: 'sitemaps' | 'feeds'
     return names.map((file) => ({ params: { file } }));
   }
   const [categories, tags] = await Promise.all([client.categories.list(), client.tags.list()]);
+  // The feed of a category is named by its slug: one shared by two categories has no feed of its own.
+  const count = new Map<string, number>();
+  categories.forEach((c) => count.set(c.slug, (count.get(c.slug) ?? 0) + 1));
   const scopes = [
     'posts',
-    ...categories.map((c) => `category-${c.slug}`),
+    ...categories.filter((c) => count.get(c.slug) === 1).map((c) => `category-${c.slug}`),
     ...tags.map((t) => `tag-${t.slug}`),
   ];
   return scopes.flatMap((scope) =>
@@ -196,6 +220,29 @@ export async function cmsFilePaths(client: CmsClient, kind: 'sitemaps' | 'feeds'
 /** The slugs of the published posts, for the `getStaticPaths` of the pages and of the `.md`. */
 export async function cmsPostSlugs(client: CmsClient, options: { locale?: string } = {}) {
   return slugsOf(client, 'posts', options.locale);
+}
+
+/**
+ * RS-16: the `getStaticPaths` of the pages of the categories, at a route `[...path].astro`: `path` is the
+ * `slugPath` (`sites/desempenho`), as the address model `{path}` writes it.
+ *
+ *   // src/pages/guias/categoria/[...path].astro
+ *   export const getStaticPaths = () => cmsCategoryPaths(cms);
+ *   const category = await cms.categories.get(Astro.params.path);
+ */
+export async function cmsCategoryPaths(client: CmsClient, options: { locale?: string } = {}) {
+  const categories = await client.categories.list({ locale: options.locale });
+  return categories.map((c) => ({ params: { path: c.slugPath } }));
+}
+
+/**
+ * RS-17: a menu in the build, with its tree of items already resolved (`href`, `external`, `children`):
+ *
+ *   // src/components/Header.astro
+ *   const menu = await cmsMenu(cms, 'principal', { locale: 'pt-BR' });
+ */
+export function cmsMenu(client: CmsClient, key: string, options: { locale?: string } = {}) {
+  return client.menus.get(key, { locale: options.locale });
 }
 
 /**

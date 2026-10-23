@@ -137,6 +137,53 @@ describe('createCmsClient (RS-03, RS-04)', () => {
     });
   });
 
+  it('RS-16: a category by its slugPath goes as one parameter, each / as %2F', async () => {
+    const { fetch, calls } = fakeFetch(() => json({}));
+    const cms = createCmsClient({ apiKey: KEY, fetch });
+    await cms.categories.get('sites/desempenho');
+    await cms.categories.get(['sites', 'desempenho'], { limit: 5 });
+    await cms.categories.get('/sites/desempenho/');
+    await cms.categories.get('seo');
+
+    expect(calls.map((c) => `${c.url.pathname}${c.url.search}`)).toEqual([
+      '/delivery/v1/categories/sites%2Fdesempenho',
+      '/delivery/v1/categories/sites%2Fdesempenho?limit=5',
+      '/delivery/v1/categories/sites%2Fdesempenho',
+      '/delivery/v1/categories/seo',
+    ]);
+  });
+
+  it('RS-17: the menus, listed without a language and read in one, with the ETag', async () => {
+    const menu = {
+      key: 'principal',
+      name: 'Principal',
+      description: null,
+      locale: 'en',
+      items: [],
+    };
+    const { fetch, calls } = fakeFetch((url) =>
+      url.pathname.endsWith('/menus')
+        ? json([{ key: 'principal', name: 'Principal', description: null }])
+        : json(menu, 200, { ETag: 'W/"m1"' }),
+    );
+    const cms = createCmsClient({ apiKey: KEY, locale: 'pt-BR', fetch });
+    expect(await cms.menus.list()).toEqual([
+      { key: 'principal', name: 'Principal', description: null },
+    ]);
+    expect(await cms.menus.get('principal', { locale: 'en' }, { ifNoneMatch: 'W/"m0"' })).toEqual(
+      menu,
+    );
+    await cms.menus.get('rodapé');
+
+    expect(calls.map((c) => `${c.url.pathname}${c.url.search}`)).toEqual([
+      '/delivery/v1/menus',
+      '/delivery/v1/menus/principal?locale=en',
+      '/delivery/v1/menus/rodap%C3%A9?locale=pt-BR',
+    ]);
+    expect(calls[1]?.headers.get('If-None-Match')).toBe('W/"m0"');
+    expect(await cms.request('/menus/principal')).toMatchObject({ etag: 'W/"m1"' });
+  });
+
   it('warns once when a preview key runs in the browser', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     vi.stubGlobal('window', {});

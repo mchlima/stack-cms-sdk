@@ -32,7 +32,7 @@ Regras têm id `RS-NN` e critérios de aceite `CS-NN`. Decisões do Michel de 20
 - **RS-03** `createCmsClient({ apiKey, baseUrl?, locale?, fetch? })`. A chave `delivery` (ou `preview`, no modo de
   prévia) fica no servidor: o SDK avisa se for usado no navegador com uma chave `preview`.
 - **RS-04** As chamadas seguem a Delivery API: `space()`, `posts.list()`, `posts.get(slug)`, `tags`, `categories`,
-  `authors`, `resolve(path)`, `redirects()`, `search(q)`. Cada uma devolve os dados tipados ou um erro tipado
+  `authors`, `menus` (RS-17), `resolve(path)`, `redirects()`, `search(q)`. Cada uma devolve os dados tipados ou um erro tipado
   (`CmsNotFoundError`, `CmsAuthError`, `CmsRateLimitError`), e repassa `ETag` e `If-None-Match`.
 
 ## 3. Desenhar o conteúdo
@@ -55,7 +55,8 @@ Regras têm id `RS-NN` e critérios de aceite `CS-NN`. Decisões do Michel de 20
   - um helper de _middleware_ que aplica os redirecionamentos do CMS;
   - uma rota de revalidação que confere a assinatura do aviso e chama `revalidatePath` para os endereços afetados.
 - **RS-08** **Astro:**
-  - um _loader_ para as coleções de conteúdo: posts, tags, categorias e autores entram no build como coleções;
+  - um _loader_ para as coleções de conteúdo: posts, tags, categorias, autores e menus entram no build como
+    coleções;
   - as mesmas rotas prontas;
   - os redirecionamentos gerados para o `astro.config`.
     É o que o site da Stack201 vai usar no lugar dos MDX. O rebuild na Vercel vem de um _Deploy Hook_ cadastrado como
@@ -106,7 +107,32 @@ Decisões do Michel de 2026-10-23.
   `https://`, `http://`, `/caminho`, `#âncora`, `mailto:` ou `tel:`. O CMS já recusa esses valores; o SDK confere de
   novo, e o valor recusado simplesmente não vem.
 
-## 6. Critérios de aceite
+## 6. Categorias em vários níveis e menus
+
+Decisões do Michel de 2026-10-23.
+
+- **RS-16** **O caminho das mães:** toda categoria da Delivery (`CategoryItem`, `CategoryPage`, `CategoryLink` em
+  `parent`, `parents` e `children`, e cada categoria de `post.categories`) tem `slugPath`, os slugs das mães e o
+  dela (`sites/desempenho`), que é o `{path}` do modelo de endereço. `categories.get(ref)` aceita o `slugPath`, as
+  partes dele (`['sites', 'desempenho']`, como a rota _catch-all_ dá) ou o slug sozinho quando só uma categoria o
+  tem; cada `/` vai como `%2F`, num parâmetro só. O `resolve` dá o `slugPath` em `slug` para categorias. O site
+  serve a categoria numa rota de vários níveis: `app/…/categoria/[...path]` no Next e
+  `src/pages/…/categoria/[...path].astro` no Astro, com `cmsCategoryPaths(cms)` no `getStaticPaths`. No _loader_
+  do Astro, a categoria tem o `slugPath` como id. O feed de uma categoria continua pelo slug
+  (`category-<slug>`): `cmsFilePaths(cms, 'feeds')` deixa de fora os slugs que mais de uma categoria usa. Mudar o
+  slug ou a mãe gera os `301` no CMS, que chegam pelos redirecionamentos de sempre (`redirects()`, o _middleware_ e
+  o aviso `redirects.updated`).
+- **RS-17** **Menus:** `menus.list()` dá `{ key, name, description }` de cada menu, e
+  `menus.get(key, { locale })` dá o menu numa língua com a árvore de itens já resolvida (`label`, `kind`, `href`,
+  `url`, `external`, `targetId`, `children`), sem os ocultos; os dois repassam o `ETag` como as outras chamadas. Os
+  tipos `Menu`, `MenuItem`, `MenuItemKind` e `MenuSummary` vêm do `openapi.json`. No Astro, `cmsMenu(cms, key,
+{ locale })` lê um menu no build, e `cmsLoader(cms, { collection: 'menus' })` traz todos como coleção (id: a
+  chave, ou `<locale>/<chave>`). O aviso `menu.updated` não traz `paths`: `menuChangeOf(event)` dá `key`,
+  `previousKey` (renomeado) e `deleted`; no Next, `createRevalidateRoute` revalida o que `onMenuUpdated(menu,
+event)` devolver (e o site chama `revalidateTag` ali, se marca a busca dos menus) ou, sem a opção, o site todo
+  (`revalidatePath('/', 'layout')`), porque o menu costuma estar no _layout_.
+
+## 7. Critérios de aceite
 
 - **CS-01** Os tipos batem com o `openapi.json` publicado; mudar a API sem regenerar o SDK quebra a CI (RS-02).
 - **CS-02** `posts.get` de um endereço que não existe dá `CmsNotFoundError`; chave errada dá `CmsAuthError` (RS-04).
@@ -121,6 +147,11 @@ Decisões do Michel de 2026-10-23.
 - **CS-09** Um bloco do space sem componente não quebra a página: o conteúdo fica, o bloco sem conteúdo some e há
   um aviso em desenvolvimento (RS-12).
 
-## 7. O que o Michel precisa providenciar
+- **CS-10** `categories.get('sites/desempenho')` e `categories.get(['sites', 'desempenho'])` chamam
+  `/categories/sites%2Fdesempenho`; o _loader_ e `cmsCategoryPaths` dão o `slugPath` (RS-16).
+- **CS-11** Um aviso `menu.updated` revalida o _layout_ inteiro, ou só o que `onMenuUpdated` disser; os outros
+  avisos continuam revalidando os `paths` que trazem (RS-17).
+
+## 8. O que o Michel precisa providenciar
 
 A organização `@stack201` no npm e um token de publicação para o GitHub Actions do repositório.

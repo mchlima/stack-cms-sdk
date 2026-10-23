@@ -190,3 +190,61 @@ export const GET = cmsFileEndpoint(cms);
 `cmsPostSlugs(cms)` alimenta o `getStaticPaths` e `cmsAstroRedirects(cms)` dá os `redirects` do `astro.config`. Para
 publicar no CMS e o site se refazer, crie um _Deploy Hook_ no projeto da Vercel e cadastre o endereço dele como webhook
 do space.
+
+### Categorias em vários níveis
+
+Com o modelo de endereço `{path}` (`/guias/categoria/sites/desempenho`), cada categoria tem `slugPath`
+(`sites/desempenho`), também nas mães, nas filhas e nas categorias de cada post. A página da categoria fica numa rota
+de vários níveis, e `categories.get` aceita o caminho inteiro ou as partes dele (cada `/` vai como `%2F`):
+
+```tsx
+// Next: app/guias/categoria/[...path]/page.tsx
+export default async function Page({ params }: { params: Promise<{ path: string[] }> }) {
+  const category = await cms.categories.get((await params).path);
+  // category.parents, category.children (cada um com slugPath e url), category.posts…
+}
+```
+
+```astro
+---
+// Astro: src/pages/guias/categoria/[...path].astro
+import { cmsCategoryPaths } from '@stack201/cms-sdk/astro';
+
+export const getStaticPaths = () => cmsCategoryPaths(cms);
+const category = await cms.categories.get(Astro.params.path!);
+---
+```
+
+O slug sozinho também serve quando só uma categoria o tem. No `cmsLoader` do Astro, a categoria tem o `slugPath`
+como id. Mudar o slug ou a mãe no CMS gera os `301` sozinho, e eles chegam pelos redirecionamentos de sempre.
+
+### Menus
+
+```ts
+const menus = await cms.menus.list(); // [{ key, name, description }]
+const menu = await cms.menus.get('principal', { locale: 'pt-BR' });
+// menu.items: [{ label, kind, href, url, external, children }], já sem os itens ocultos
+```
+
+No Astro, `cmsMenu(cms, 'principal', { locale })` lê o menu no build, ou
+`cmsLoader(cms, { collection: 'menus' })` traz todos como coleção (`getEntry('menus', 'principal')`).
+
+O aviso `menu.updated` não traz páginas. No Next, `createRevalidateRoute` revalida o site todo
+(`revalidatePath('/', 'layout')`) por padrão, porque o menu costuma estar no _layout_; `onMenuUpdated` troca isso
+pelo que o site disser:
+
+```ts
+import { revalidatePath, revalidateTag } from 'next/cache';
+
+export const POST = createRevalidateRoute({
+  secret: process.env.CMS_WEBHOOK_SECRET!,
+  revalidatePath,
+  // A busca do menu marcada com cms.menus.get(key, {}, { init: { next: { tags: [`menu:${key}`] } } })
+  onMenuUpdated: (menu) => {
+    revalidateTag(`menu:${menu.key}`, 'max');
+    if (menu.previousKey) revalidateTag(`menu:${menu.previousKey}`, 'max');
+  },
+});
+```
+
+Fora do Next, `menuChangeOf(event)` (de `@stack201/cms-sdk/webhooks`) dá `key`, `previousKey` e `deleted` do aviso.

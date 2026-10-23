@@ -1,8 +1,10 @@
 import type { CmsClient } from '../client.js';
 import type { HeadInput } from '../head.js';
 import { createRedirectMatcher, siteFile, siteMarkdown } from '../site.js';
-import type { Redirect } from '../types.js';
-import { CmsWebhookError, verifyCmsWebhook } from '../webhooks.js';
+import type { Redirect, SitePayload } from '../types.js';
+import { CmsWebhookError, type MenuChange, menuChangeOf, verifyCmsWebhook } from '../webhooks.js';
+
+export type { MenuChange } from '../webhooks.js';
 
 /**
  * RS-07: Next (App Router) without depending on the `next` package: the helpers take and give the
@@ -75,14 +77,28 @@ export interface RevalidateRouteOptions {
   /** The secret of the webhook in the CMS (`whsec_…`), from the environment. */
   secret: string;
   /** `revalidatePath` of `next/cache`. */
-  revalidatePath: (path: string) => void;
+  revalidatePath: (path: string, type?: 'layout' | 'page') => void;
   /** Paths revalidated on every notice, besides the ones the CMS says (a listing of the site, say). */
   alsoRevalidate?: string[];
+  /**
+   * What to revalidate when a menu changes (`menu.updated`, which brings no paths): the paths it gives
+   * (a `string[]`, or a promise of one) are revalidated, and nothing else; anything else revalidates nothing. Call `revalidateTag` here if the site tags the fetch of its menus.
+   * Without it, the whole site is revalidated (`revalidatePath('/', 'layout')`), since a menu is usually
+   * in the layout.
+   */
+  onMenuUpdated?: (menu: MenuChange, event: SitePayload) => unknown;
+}
+
+/** What a notice revalidated, in the answer of the route. */
+interface Revalidated {
+  path: string;
+  type?: 'layout' | 'page';
 }
 
 /**
  * RS-07, RS-09, CS-05: the route the webhook of the CMS calls. Checks the signature and revalidates only
- * the pages the notice says changed:
+ * the pages the notice says changed; a change of a menu revalidates what `onMenuUpdated` says, or the
+ * whole site (RS-17):
  *
  *   // app/api/cms/route.ts
  *   import { revalidatePath } from 'next/cache';
@@ -90,19 +106,37 @@ export interface RevalidateRouteOptions {
  */
 export function createRevalidateRoute(options: RevalidateRouteOptions) {
   return async (request: Request): Promise<Response> => {
+    let event: SitePayload;
     try {
-      const event = await verifyCmsWebhook(request, options.secret);
-      const paths = [...new Set([...event.paths, ...(options.alsoRevalidate ?? [])])];
-      paths.forEach((path) => {
-        options.revalidatePath(path);
-      });
-      return Response.json({ event: event.type, revalidated: paths });
+      event = await verifyCmsWebhook(request, options.secret);
     } catch (error) {
       if (error instanceof CmsWebhookError) {
         return Response.json({ error: error.reason }, { status: 401 });
       }
       throw error;
     }
+    const targets: Revalidated[] = [];
+    const menu = menuChangeOf(event);
+    if (menu && !options.onMenuUpdated) {
+      targets.push({ path: '/', type: 'layout' });
+    }
+    const fromMenu: unknown =
+      menu && options.onMenuUpdated ? await options.onMenuUpdated(menu, event) : [];
+    const menuPaths = Array.isArray(fromMenu)
+      ? fromMenu.filter((p): p is string => typeof p === 'string')
+      : [];
+    const paths = [...event.paths, ...menuPaths, ...(options.alsoRevalidate ?? [])];
+    for (const path of new Set(paths)) {
+      targets.push({ path });
+    }
+    for (const target of targets) {
+      if (target.type) {
+        options.revalidatePath(target.path, target.type);
+      } else {
+        options.revalidatePath(target.path);
+      }
+    }
+    return Response.json({ event: event.type, revalidated: targets.map((t) => t.path) });
   };
 }
 

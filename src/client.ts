@@ -4,6 +4,9 @@ import type {
   AuthorPage,
   CategoryItem,
   CategoryPage,
+  Menu,
+  MenuQuery,
+  MenuSummary,
   Post,
   PostCardPage,
   PostsQuery,
@@ -148,6 +151,14 @@ export function createCmsClient(options: CmsClientOptions) {
   }
 
   const slug = (value: string) => encodeURIComponent(value);
+  /**
+   * The `slugPath` of a category (`sites/desempenho`), or its segments as a catch-all route gives them
+   * (`['sites', 'desempenho']`): each `/` goes as `%2F`, so the API sees one parameter.
+   */
+  const categoryRef = (value: string | readonly string[]) =>
+    encodeURIComponent(
+      (typeof value === 'string' ? value.split('/') : value).filter(Boolean).join('/'),
+    );
 
   return {
     request,
@@ -191,8 +202,12 @@ export function createCmsClient(options: CmsClientOptions) {
     categories: {
       list: (query: { locale?: string } = {}, options?: RequestOptions) =>
         get<CategoryItem[]>('/categories', query, options),
-      get: (value: string, query: TermQuery = {}, options?: RequestOptions) =>
-        get<CategoryPage>(`/categories/${slug(value)}`, query, options),
+      /**
+       * A category by its `slugPath` (`sites/desempenho`, or `['sites', 'desempenho']`), or by its slug
+       * alone when only one category has it.
+       */
+      get: (value: string | readonly string[], query: TermQuery = {}, options?: RequestOptions) =>
+        get<CategoryPage>(`/categories/${categoryRef(value)}`, query, options),
     },
 
     authors: {
@@ -202,7 +217,18 @@ export function createCmsClient(options: CmsClientOptions) {
         get<AuthorPage>(`/authors/${slug(value)}`, query, options),
     },
 
-    /** What a path of the site is: a page, a redirect or gone (RN-31 of the API). */
+    menus: {
+      /** The menus of the space: `key`, `name` and `description`, without the items. */
+      list: (options?: RequestOptions) => get<MenuSummary[]>('/menus', { locale: null }, options),
+      /** A menu with its tree of items already resolved (`href`, `url`, `external`), in a language. */
+      get: (key: string, query: MenuQuery = {}, options?: RequestOptions) =>
+        get<Menu>(`/menus/${slug(key)}`, query, options),
+    },
+
+    /**
+     * What a path of the site is: a page, a redirect or gone (RN-31 of the API). For a category, `slug` is
+     * its `slugPath`.
+     */
     resolve: (path: string, options?: RequestOptions) =>
       get<ResolvedPath>('/resolve', { path, locale: null }, options),
 
