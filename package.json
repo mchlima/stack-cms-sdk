@@ -1,6 +1,6 @@
 {
   "name": "@stack201/cms-sdk",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "SDK do Stack CMS: o cliente da Delivery API e o que os sites precisam para SEO, GEO e AEO",
   "license": "MIT",
   "type": "module",

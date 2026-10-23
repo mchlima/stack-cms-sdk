@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/mchlima/stack-cms-sdk/compare/v0.4.0...v0.4.1) (2026-10-23)
+
+
+### Bug Fixes
+
+* **conteudo:** nenhum javascript: nem link inseguro chega aos componentes dos blocos ([#13](https://github.com/mchlima/stack-cms-sdk/issues/13)) ([ce351f2](https://github.com/mchlima/stack-cms-sdk/commit/ce351f269e1a13e9656d68e6e2846b9cd291b2fe))
+
 ## [0.4.0](https://github.com/mchlima/stack-cms-sdk/compare/v0.3.0...v0.4.0) (2026-10-23)
 
 
