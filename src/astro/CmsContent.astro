@@ -1,0 +1,35 @@
+---
+/**
+ * RS-11: draws the `hast` of a post in Astro, replacing blocks and elements by components of the site:
+ * components of Astro or of any framework the site has (React, Vue, Svelte…), drawn on the server.
+ *
+ *   import CmsContent from '@stack201/cms-sdk/astro/CmsContent.astro';
+ *   <CmsContent hast={post.hast} blocks={{ cta: Cta }} components={{ a: Link }} />
+ */
+import type { BlockDefinition } from '../content/blocks.js';
+import { contentNodes } from '../content/model.js';
+import CmsNodes from './CmsNodes.astro';
+
+interface Props {
+  /** The `hast` of the post (or of a preview). */
+  hast: unknown;
+  /** Blocks replaced by components of the site, by the `data-block`: `{ note: Callout, cta: Cta }`. */
+  blocks?: Record<string, any>;
+  /** Elements replaced by components of the site (or by another tag), by tag: `{ a: Link }`. */
+  components?: Record<string, any>;
+  /** `space.customBlocks`: types the attributes and warns about blocks without a component. */
+  customBlocks?: readonly BlockDefinition[] | null;
+  /** Warns about blocks of the space without a component; in development by default. */
+  warn?: boolean;
+}
+
+const { hast, blocks = {}, components = {}, customBlocks = null, warn } = Astro.props;
+const nodes = contentNodes(hast, {
+  blocks,
+  components,
+  customBlocks,
+  ...(warn === undefined ? {} : { warn }),
+});
+---
+
+<CmsNodes nodes={nodes} blocks={blocks} components={components} />

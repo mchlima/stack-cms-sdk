@@ -1,0 +1,5 @@
+---
+const { attributes } = Astro.props;
+---
+
+<a class="cta" href={attributes.href}>{attributes.label}<slot /></a>

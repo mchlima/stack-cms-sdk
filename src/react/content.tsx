@@ -3,12 +3,25 @@ import { type Components, type Options, toJsxRuntime } from 'hast-util-to-jsx-ru
 import type { ComponentType, JSX, ReactNode } from 'react';
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime';
 
+import {
+  type BlockAttributes,
+  type BlockDefinition,
+  type CmsBlock,
+  readBlock,
+  warnMissingBlock,
+  warnMissingBlocks,
+  warnsByDefault,
+} from '../content/blocks.js';
+
 /** What a block of the CMS gives to the component that takes its place (RS-05). */
-export interface BlockProps {
+export interface BlockProps<A extends BlockAttributes = Record<string, string>> {
   /** `answer`, `note`, `steps`, `image`, `video`, `table`, `code` or a block of the space. */
   name: string;
-  /** The attributes of the block, without the `data-`: `{ type: 'warning' }`, `{ href, label }`. */
-  attributes: Record<string, string>;
+  /**
+   * The attributes of the block, without the `data-`: `{ type: 'warning' }`, `{ href, label }`. Text, or
+   * typed by `customBlocks` (`BlockProps<CmsBlockAttributes['cta']>`).
+   */
+  attributes: A;
   /** The `id` of the block, when it has one (the answer, for the table of contents). */
   id?: string;
   /** The content of the block, already drawn (and with its own replacements). */
@@ -16,6 +29,9 @@ export interface BlockProps {
   /** The element as the CMS made it, for whoever wants all of it. */
   node: Element;
 }
+
+/** A component of a block, with its attributes of any type (`never` takes any `BlockProps<A>`). */
+export type BlockComponent = ComponentType<BlockProps<never>>;
 
 type Tag = keyof JSX.IntrinsicElements;
 
@@ -30,7 +46,14 @@ export interface CmsContentProps {
   /** Elements replaced by components of the site: `{ a: Link, img: Image, table: Table }`. */
   components?: ElementComponents;
   /** Blocks replaced by components of the site, by the `data-block`: `{ note: Callout, cta: Cta }`. */
-  blocks?: Record<string, ComponentType<BlockProps>>;
+  blocks?: Record<string, BlockComponent>;
+  /**
+   * `space.customBlocks`: types the attributes (`number`, `boolean`) and warns, in development, about the
+   * blocks of the space without a component (RS-12).
+   */
+  customBlocks?: readonly BlockDefinition[] | null;
+  /** Warns about blocks of the space without a component; in development by default. */
+  warn?: boolean;
 }
 
 /** `toJsxRuntime` with the return of React 19: its types use the global `JSX`, which React 19 dropped. */
@@ -40,43 +63,28 @@ const toReact = toJsxRuntime as unknown as (tree: Root, options: Options) => Rea
 const SLOT = 'cms-block';
 
 interface Slot {
-  block: string;
-  original: Element;
+  block: CmsBlock;
 }
 
-const kebab = (value: string) => value.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
-
-/** The `data-*` of an element, by name: the API writes some as `dataType` and some as `data-href`. */
-function attributesOf(element: Element): Record<string, string> {
-  const attributes: Record<string, string> = {};
-  for (const [key, value] of Object.entries(element.properties)) {
-    const name = key.startsWith('data-')
-      ? key.slice(5)
-      : /^data[A-Z]/.test(key)
-        ? kebab(key.slice(4)).slice(1)
-        : null;
-    if (name && name !== 'block' && value !== null && value !== undefined) {
-      attributes[name] = Array.isArray(value) ? value.join(' ') : String(value);
-    }
-  }
-  return attributes;
+interface Context {
+  blocks: Record<string, unknown>;
+  customBlocks: readonly BlockDefinition[] | null;
+  warn: boolean;
 }
 
-const blockOf = (element: Element): string | null => {
-  const value = element.properties.dataBlock ?? element.properties['data-block'];
-  return typeof value === 'string' ? value : null;
-};
-
-/** Puts a slot where each replaced block is; everything else stays as the CMS made it. */
-function withSlots<T extends Root | Element>(node: T, blocks: Record<string, unknown>): T {
-  const children = node.children.map((child: RootContent): RootContent => {
+/**
+ * Puts a slot where each replaced block is; a block of the space without a component leaves its content
+ * (RS-12); everything else stays as the CMS made it.
+ */
+function withSlots<T extends Root | Element>(node: T, context: Context): T {
+  const children = node.children.flatMap((child: RootContent): RootContent[] => {
     if (child.type !== 'element') {
-      return child;
+      return [child];
     }
-    const block = blockOf(child);
-    const inner = withSlots(child, blocks);
-    if (block && block in blocks) {
-      const slot: Slot = { block, original: child };
+    const block = readBlock(child, context.customBlocks);
+    const inner = withSlots(child, context);
+    if (block && Object.hasOwn(context.blocks, block.name)) {
+      const slot: Slot = { block };
       const element: Element = {
         type: 'element',
         tagName: SLOT,
@@ -84,9 +92,15 @@ function withSlots<T extends Root | Element>(node: T, blocks: Record<string, unk
         children: inner.children,
         data: slot as unknown as Element['data'],
       };
-      return element;
+      return [element];
     }
-    return inner;
+    if (block?.custom) {
+      if (context.warn) {
+        warnMissingBlock(block.name);
+      }
+      return inner.children;
+    }
+    return [inner];
   });
   return { ...node, children: children };
 }
@@ -95,22 +109,25 @@ function withSlots<T extends Root | Element>(node: T, blocks: Record<string, unk
  * RS-05: draws the `hast` of a post with React. Elements and blocks named in `components` and `blocks`
  * become components of the site; the rest comes out as the HTML of the CMS (CS-03).
  */
-export function CmsContent({ hast, components = {}, blocks = {} }: CmsContentProps): ReactNode {
-  const tree = withSlots(hast as Root, blocks);
+export function CmsContent({
+  hast,
+  components = {},
+  blocks = {},
+  customBlocks = null,
+  warn = warnsByDefault(),
+}: CmsContentProps): ReactNode {
+  if (warn) {
+    warnMissingBlocks(customBlocks, blocks);
+  }
+  const tree = withSlots(hast as Root, { blocks, customBlocks, warn });
   const BlockSlot = ({ node, children }: { node?: Element; children?: ReactNode }) => {
     const slot = node?.data as unknown as Slot | undefined;
-    const Block = slot ? blocks[slot.block] : undefined;
+    const Block = slot ? (blocks[slot.block.name] as ComponentType<BlockProps>) : undefined;
     if (!slot || !Block) {
       return children;
     }
-    const id = slot.original.properties.id;
-    return jsx(Block, {
-      name: slot.block,
-      attributes: attributesOf(slot.original),
-      id: typeof id === 'string' ? id : undefined,
-      node: slot.original,
-      children,
-    });
+    const { name, attributes, id, node: original } = slot.block;
+    return jsx(Block, { name, attributes, id, node: original, children });
   };
   return toReact(tree, {
     Fragment,

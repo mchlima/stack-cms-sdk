@@ -1,39 +1,10 @@
-import type { Element, Nodes, Root } from 'hast';
-import { fromHtml } from 'hast-util-from-html';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import custom from '../test/fixtures/custom-blocks.json' with { type: 'json' };
+import { CUSTOM_EXPECTED, tree, withoutCustomBlocks } from '../test/html.js';
 import { type BlockProps, CmsContent } from './content.js';
 import fixture from './fixtures/post.json' with { type: 'json' };
-
-/** HTML as a tree to compare: no positions, no whitespace between tags, styles without spaces. */
-function tree(html: string): Root {
-  const clean = (node: Nodes): Nodes | null => {
-    if (node.type === 'text') {
-      return node.value.trim() === '' ? null : { type: 'text', value: node.value };
-    }
-    if (node.type === 'element') {
-      const properties = { ...node.properties };
-      if (typeof properties.style === 'string') {
-        properties.style = properties.style.replace(/\s+/g, '').replace(/;$/, '');
-      }
-      return {
-        type: 'element',
-        tagName: node.tagName,
-        properties,
-        children: node.children.flatMap((c) => clean(c) ?? []) as Element['children'],
-      };
-    }
-    if (node.type === 'root') {
-      return {
-        type: 'root',
-        children: node.children.flatMap((c) => clean(c) ?? []) as Root['children'],
-      };
-    }
-    return null;
-  };
-  return clean(fromHtml(html, { fragment: true })) as Root;
-}
 
 const Cta = ({ attributes, children }: BlockProps) => (
   <a className="cta" href={attributes.href}>
@@ -43,9 +14,9 @@ const Cta = ({ attributes, children }: BlockProps) => (
 );
 
 describe('<CmsContent> (RS-05)', () => {
-  it('without replacements, draws the same HTML as the CMS', () => {
-    const html = renderToStaticMarkup(<CmsContent hast={fixture.hast} />);
-    expect(tree(html)).toEqual(tree(fixture.html));
+  it('without replacements, draws the HTML of the CMS, without the blocks of the space', () => {
+    const html = renderToStaticMarkup(<CmsContent hast={fixture.hast} warn={false} />);
+    expect(tree(html)).toEqual(tree(withoutCustomBlocks(fixture.html)));
   });
 
   it('CS-03: a block of the space becomes the component of the site; the rest stays the same', () => {
@@ -82,5 +53,46 @@ describe('<CmsContent> (RS-05)', () => {
     expect(html).toContain('<div role="note"><p>Imagens sem tamanho pioram o CLS.</p></div>');
     expect(html).toContain('<div id="resposta"><p>O LCP bom');
     expect(html).toContain('<a href="https://web.dev/lcp" data-site-link="">guia do Google</a>');
+  });
+
+  it('blocks of the space in the new form, nested, with attributes typed by customBlocks', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const Destaque = ({
+      attributes,
+      children,
+    }: BlockProps<{ nivel?: number; aberto?: boolean }>) => (
+      <section
+        className="destaque"
+        data-types={`${typeof attributes.nivel} ${typeof attributes.aberto}`}
+      >
+        {children}
+      </section>
+    );
+    const html = renderToStaticMarkup(
+      <CmsContent
+        hast={custom.hast}
+        customBlocks={custom.customBlocks}
+        blocks={{ cta: Cta, destaque: Destaque }}
+        components={{
+          a: ({ href, children }) => (
+            <a href={href} data-site-link="">
+              {children}
+            </a>
+          ),
+        }}
+        warn
+      />,
+    );
+    expect(tree(html)).toEqual(tree(CUSTOM_EXPECTED));
+    // RS-12: the banner has no component: it goes away, with a warning in development.
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('"banner"'));
+    warn.mockRestore();
+  });
+
+  it('serves Server Components: no hooks, no state, no "use client"', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const source = await readFile(new URL('./content.tsx', import.meta.url), 'utf8');
+    expect(source).not.toMatch(/use client|useState|useEffect|useContext|useMemo/);
   });
 });
