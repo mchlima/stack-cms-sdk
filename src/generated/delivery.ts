@@ -164,6 +164,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/delivery/v1/menus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["deliveryMenus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/delivery/v1/menus/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["deliveryMenu"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/delivery/v1/resolve": {
         parameters: {
             query?: never;
@@ -380,10 +412,22 @@ export interface components {
             name: string;
             path: string;
             url: string;
+            /** @description Os slugs das categorias-mãe e o da categoria (sites/desempenho): o que vai no {path} do endereço e em GET /categories/{slug}. */
+            slugPath: string;
             /** Format: uuid */
             parentId: string | null;
             position: number;
             posts: number;
+        };
+        CategoryLink: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+            path: string;
+            url: string;
+            /** @description Os slugs das categorias-mãe e o da categoria (sites/desempenho): o que vai no {path} do endereço e em GET /categories/{slug}. */
+            slugPath: string;
         };
         CategoryPage: {
             /** Format: uuid */
@@ -392,6 +436,8 @@ export interface components {
             name: string;
             path: string;
             url: string;
+            /** @description Os slugs das categorias-mãe e o da categoria (sites/desempenho): o que vai no {path} do endereço e em GET /categories/{slug}. */
+            slugPath: string;
             description: string | null;
             descriptionHtml: string | null;
             cover: components["schemas"]["Image"] | null;
@@ -411,9 +457,9 @@ export interface components {
             jsonLd: components["schemas"]["JsonLd"];
             alternates: components["schemas"]["Alternate"][];
             posts: components["schemas"]["PostCardPage"];
-            parent: components["schemas"]["TermLink"] | null;
-            parents: components["schemas"]["TermLink"][];
-            children: components["schemas"]["TermLink"][];
+            parent: components["schemas"]["CategoryLink"] | null;
+            parents: components["schemas"]["CategoryLink"][];
+            children: components["schemas"]["CategoryLink"][];
         };
         CustomBlock: {
             name: string;
@@ -429,6 +475,32 @@ export interface components {
             required?: boolean;
             description?: string | null;
             values?: string[];
+        };
+        DeliveryMenu: {
+            key: string;
+            name: string;
+            description: string | null;
+            locale: string;
+            items: components["schemas"]["DeliveryMenuItem"][];
+        };
+        DeliveryMenuItem: {
+            id: string;
+            label: string;
+            /**
+             * @description Para onde o item leva: nada (só agrupa), um link (url) ou uma página do space (targetId).
+             * @enum {string}
+             */
+            kind: "none" | "url" | "post" | "category" | "tag" | "author";
+            href: string | null;
+            url: string | null;
+            external: boolean;
+            targetId: string | null;
+            children: components["schemas"]["DeliveryMenuItem"][];
+        };
+        DeliveryMenuSummary: {
+            key: string;
+            name: string;
+            description: string | null;
         };
         DeliveryRedirect: {
             from: string;
@@ -542,6 +614,8 @@ export interface components {
                 name: string;
                 path: string;
                 url: string;
+                /** @description Os slugs das categorias-mãe e o da categoria (sites/desempenho): o que vai no {path} do endereço e em GET /categories/{slug}. */
+                slugPath: string;
                 primary: boolean;
             }[];
             tags: components["schemas"]["TermLink"][];
@@ -577,6 +651,8 @@ export interface components {
                 name: string;
                 path: string;
                 url: string;
+                /** @description Os slugs das categorias-mãe e o da categoria (sites/desempenho): o que vai no {path} do endereço e em GET /categories/{slug}. */
+                slugPath: string;
                 primary: boolean;
             }[];
             tags: components["schemas"]["TermLink"][];
@@ -657,7 +733,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            type: "post.published" | "post.updated" | "post.unpublished" | "taxonomy.updated" | "space.updated" | "redirects.updated";
+            type: "post.published" | "post.updated" | "post.unpublished" | "taxonomy.updated" | "space.updated" | "redirects.updated" | "menu.updated";
             /** Format: date-time */
             occurredAt: string;
             space: {
@@ -1039,6 +1115,66 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthorPage"];
+                };
+            };
+            /** @description Erro */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deliveryMenus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryMenuSummary"][];
+                };
+            };
+            /** @description Erro */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deliveryMenu: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryMenu"];
                 };
             };
             /** @description Erro */
