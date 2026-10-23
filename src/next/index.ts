@@ -20,7 +20,7 @@ export type { MenuChange } from '../webhooks.js';
  */
 export function cmsFileRoute(client: CmsClient) {
   return async (request: Request): Promise<Response> =>
-    (await siteFile(client, new URL(request.url))) ??
+    (await siteFile(client, new URL(request.url), { strict: true })) ??
     new Response('Não encontrado.', { status: 404 });
 }
 

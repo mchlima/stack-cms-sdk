@@ -68,6 +68,10 @@ describe('what every site serves (RS-07, RS-08)', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     expect(await siteFile(client, new URL(`${SITE}/blog/rss.xml`))).toBeNull();
     warn.mockRestore();
+    // A route made for the files says the API is out, and a reader of feeds gets a 5xx, not a 404.
+    await expect(
+      siteFile(client, new URL(`${SITE}/blog/rss.xml`), { strict: true }),
+    ).rejects.toThrow();
   });
 
   it('the Markdown of a post at its address with .md, and 404 for what is not a post', async () => {
@@ -100,8 +104,9 @@ describe('what every site serves (RS-07, RS-08)', () => {
     expect((await redirects.response(new URL(`${SITE}/blog/saiu`), 1000))?.status).toBe(410);
     expect(await redirects.response(new URL(`${SITE}/blog/outro`), 2000)).toBeNull();
     // The feeds of a page that moved go with it; other addresses under it do not.
-    const feed = await redirects.response(new URL(`${SITE}/blog/antigo/rss.xml`), 2000);
-    expect(feed?.headers.get('Location')).toBe(`${SITE}/blog/novo/rss.xml`);
+    const feed = await redirects.response(new URL(`${SITE}/blog/antigo/rss.xml?locale=en`), 2000);
+    // The query goes along: the feed in English stays in English.
+    expect(feed?.headers.get('Location')).toBe(`${SITE}/blog/novo/rss.xml?locale=en`);
     expect((await redirects.response(new URL(`${SITE}/blog/saiu/feed.json`), 2000))?.status).toBe(
       410,
     );

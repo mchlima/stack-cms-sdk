@@ -23,14 +23,27 @@ const FILE_CACHE = 'public, max-age=60, stale-while-revalidate=600';
 
 const notFound = () => new Response('Não encontrado.', { status: 404 });
 
+export interface SiteFileOptions {
+  /**
+   * A route made for the files (`cmsFileRoute`, `cmsFileEndpoint`): the API out of reach is an error, not "no file
+   * here", so a reader of feeds gets a `5xx` and a static build fails. Off in the middleware, where the address may
+   * be a route of the site (`/blog/rss.xml`) that goes on.
+   */
+  strict?: boolean;
+}
+
 /**
  * A file of the API, for the address asked, or null when the address is not one of them. The feed of a category is
  * also at the address of the category, with `rss.xml`, `atom.xml` or `feed.json` at the end, so the redirects of the
  * category cover it too.
  */
-export async function siteFile(client: CmsClient, url: URL): Promise<Response | null> {
+export async function siteFile(
+  client: CmsClient,
+  url: URL,
+  options: SiteFileOptions = {},
+): Promise<Response | null> {
   if (!SITE_FILE.test(url.pathname)) {
-    return categoryFeed(client, url);
+    return categoryFeed(client, url, options.strict ?? false);
   }
   const query = Object.fromEntries(url.searchParams);
   return fileResponse(client, url.pathname, { ...query, locale: query.locale ?? null });
@@ -50,7 +63,11 @@ interface CategoryAt {
   locale: string;
 }
 
-async function categoryAt(client: CmsClient, page: string): Promise<CategoryAt | null> {
+async function categoryAt(
+  client: CmsClient,
+  page: string,
+  strict: boolean,
+): Promise<CategoryAt | null> {
   const cache: FeedPages = FEED_PAGES.get(client) ?? new Map<string, FeedPage>();
   FEED_PAGES.set(client, cache);
   const known = cache.get(page);
@@ -65,6 +82,9 @@ async function categoryAt(client: CmsClient, page: string): Promise<CategoryAt |
     }
   } catch (error) {
     if (!(error instanceof CmsNotFoundError)) {
+      if (strict) {
+        throw error;
+      }
       // The API out of reach does not take down a route of the site with the same end.
       console.warn(
         `[cms-sdk] Não deu para saber se ${page} é uma categoria: ${error instanceof Error ? error.message : String(error)}`,
@@ -80,9 +100,13 @@ async function categoryAt(client: CmsClient, page: string): Promise<CategoryAt |
 }
 
 /** The feed of a category at its address, or null when the address before the end is not a category. */
-async function categoryFeed(client: CmsClient, url: URL): Promise<Response | null> {
+async function categoryFeed(
+  client: CmsClient,
+  url: URL,
+  strict: boolean,
+): Promise<Response | null> {
   const [, page = '', end = ''] = CATEGORY_FEED.exec(url.pathname) ?? [];
-  const category = page ? await categoryAt(client, page) : null;
+  const category = page ? await categoryAt(client, page, strict) : null;
   if (!category) {
     return null;
   }
@@ -192,9 +216,14 @@ export function createRedirectMatcher(client: CmsClient, options: RedirectMatche
           headers: { 'Content-Type': 'text/plain; charset=utf-8' },
         });
       }
+      // The query goes along (`?locale=en` of a feed), unless the redirect has its own.
+      const location = new URL(redirect.to, url);
+      if (!location.search) {
+        location.search = url.search;
+      }
       return new Response(null, {
         status: redirect.status,
-        headers: { Location: new URL(redirect.to, url).toString() },
+        headers: { Location: location.toString() },
       });
     },
   };

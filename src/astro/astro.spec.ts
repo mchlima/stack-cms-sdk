@@ -106,14 +106,18 @@ describe('@stack201/cms-sdk/astro (RS-08)', () => {
       { params: { path: 'sites/desempenho' } },
     ]);
 
-    // With {slug}, the address has the slug alone.
+    // With {slug}, the address has the slug alone, even with a prefix like the slug of a parent.
     const flat = fakeApi({
       '/categories': () =>
         Response.json([
-          { ...category('desempenho', 'sites/desempenho'), path: '/guias/categoria/desempenho' },
+          { ...category('sites', 'sites'), path: '/sites/sites' },
+          { ...category('desempenho', 'sites/desempenho'), path: '/sites/desempenho' },
         ]),
     });
-    expect(await cmsCategoryPaths(flat.client)).toEqual([{ params: { path: 'desempenho' } }]);
+    expect(await cmsCategoryPaths(flat.client)).toEqual([
+      { params: { path: 'sites' } },
+      { params: { path: 'desempenho' } },
+    ]);
   });
 
   it('RS-17: the menus enter as a collection by their key, or one at a time', async () => {

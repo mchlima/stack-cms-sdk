@@ -123,7 +123,12 @@ Decisões do Michel de 2026-10-23.
   `atom.xml`, `feed.json`): `siteFile` e o _middleware_ do Next acham a categoria pelo `resolve`, e no Astro a rota
   `[...path]/rss.xml.ts` usa `cmsCategoryPaths` e `cmsFileEndpoint`. Mudar o slug ou a mãe gera os `301` no CMS, que
   chegam pelos redirecionamentos de sempre (`redirects()`, o _middleware_ e o aviso `redirects.updated`); o
-  redirecionamento de uma página leva junto os feeds dela (`/antiga/rss.xml` → `/nova/rss.xml`).
+  redirecionamento de uma página leva junto os feeds dela (`/antiga/rss.xml` → `/nova/rss.xml`), e a query do
+  pedido (`?locale=en`) vai junto quando o destino não tem a sua. O `siteFile` guarda por um minuto o que é cada
+  endereço antes de `rss.xml`; no _middleware_, a API fora do ar deixa o pedido seguir para o site, e nas rotas
+  feitas para os arquivos (`cmsFileRoute`, `cmsFileEndpoint`) é um erro, para o leitor de feeds receber `5xx` e o
+  build estático falhar. Sites com o SDK até 0.4 não aceitam o nome novo do feed de subcategoria: atualize o SDK
+  junto com a API.
 - **RS-17** **Menus:** `menus.list()` dá `{ key, name, description }` de cada menu, e
   `menus.get(key, { locale })` dá o menu numa língua com a árvore de itens já resolvida (`label`, `kind`, `href`,
   `url`, `external`, `targetId`, `children`), sem os ocultos; os dois repassam o `ETag` como as outras chamadas. Os

@@ -182,7 +182,8 @@ export interface CmsEndpointContext {
  */
 export function cmsFileEndpoint(client: CmsClient) {
   return async ({ url }: CmsEndpointContext): Promise<Response> =>
-    (await siteFile(client, url)) ?? new Response('Não encontrado.', { status: 404 });
+    (await siteFile(client, url, { strict: true })) ??
+    new Response('Não encontrado.', { status: 404 });
 }
 
 /** RS-08: the Markdown of a post at its address with `.md` (`src/pages/blog/[slug].md.ts`). */
@@ -237,9 +238,14 @@ export async function cmsPostSlugs(client: CmsClient, options: { locale?: string
  */
 export async function cmsCategoryPaths(client: CmsClient, options: { locale?: string } = {}) {
   const categories = await client.categories.list({ locale: options.locale });
-  // With `{path}` the address ends with the slug path; with `{slug}`, with the slug alone.
+  // What comes before a category at the top is the prefix of every address (`/guias/categoria/`); after it,
+  // the slug path with `{path}`, the slug with `{slug}`.
+  const top = categories.find((c) => !c.slugPath.includes('/') && c.path.endsWith(`/${c.slug}`));
+  const prefix = top ? top.path.slice(0, -top.slug.length) : null;
   return categories.map((c) => ({
-    params: { path: c.path.endsWith(`/${c.slugPath}`) ? c.slugPath : c.slug },
+    params: {
+      path: prefix && c.path.startsWith(prefix) ? c.path.slice(prefix.length) : c.slugPath,
+    },
   }));
 }
 
