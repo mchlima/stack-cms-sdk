@@ -4,6 +4,9 @@ import type { components, operations } from './generated/delivery.js';
 type Schemas = components['schemas'];
 
 export type Space = Schemas['DeliverySpace'];
+/** A block of the space (`space.customBlocks`), with its typed attributes. */
+export type CustomBlock = Schemas['CustomBlock'];
+export type CustomBlockAttribute = Schemas['CustomBlockAttribute'];
 export type PostCard = Schemas['PostCard'];
 export type PostCardPage = Schemas['PostCardPage'];
 export type Post = Schemas['PostDetail'];

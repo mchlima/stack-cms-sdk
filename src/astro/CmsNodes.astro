@@ -1,0 +1,45 @@
+---
+/** The nodes of the content, drawing itself for what is inside each one. */
+import type { ContentNode } from '../content/model.js';
+
+interface Props {
+  nodes: ContentNode[];
+  blocks: Record<string, any>;
+  components: Record<string, any>;
+}
+
+const { nodes, blocks, components } = Astro.props;
+const Self = Astro.self;
+---
+
+{
+  nodes.map((node) => {
+    if (node.type === 'text') {
+      return node.value;
+    }
+    if (node.type === 'html') {
+      return <Fragment set:html={node.html} />;
+    }
+    if (node.type === 'block') {
+      const Block = blocks[node.block.name];
+      const { name, attributes, id, node: element } = node.block;
+      return node.children.length ? (
+        <Block name={name} attributes={attributes} id={id} node={element}>
+          <Self nodes={node.children} blocks={blocks} components={components} />
+        </Block>
+      ) : (
+        <Block name={name} attributes={attributes} id={id} node={element} />
+      );
+    }
+    const Tag = (node.component ? components[node.tagName] : undefined) ?? node.tagName;
+    const props =
+      typeof Tag === 'string' ? node.attributes : { ...node.attributes, node: node.node };
+    return node.children.length ? (
+      <Tag {...props}>
+        <Self nodes={node.children} blocks={blocks} components={components} />
+      </Tag>
+    ) : (
+      <Tag {...props} />
+    );
+  })
+}

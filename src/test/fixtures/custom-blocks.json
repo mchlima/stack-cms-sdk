@@ -1,0 +1,426 @@
+{
+  "customBlocks": [
+    {
+      "name": "cta",
+      "container": false,
+      "description": "Chamada para ação, no máximo uma por post.",
+      "markdown": "[{label}]({href})",
+      "attributes": [
+        {
+          "name": "href",
+          "type": "link",
+          "required": true,
+          "description": "Para onde a chamada leva."
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "variant",
+          "type": "enum",
+          "values": ["primary", "secondary"]
+        }
+      ]
+    },
+    {
+      "name": "destaque",
+      "container": true,
+      "description": null,
+      "markdown": null,
+      "attributes": [
+        {
+          "name": "nivel",
+          "type": "number"
+        },
+        {
+          "name": "aberto",
+          "type": "boolean"
+        },
+        {
+          "name": "cta-text",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "banner",
+      "container": false,
+      "attributes": [
+        {
+          "name": "titulo",
+          "type": "string"
+        },
+        {
+          "name": "link",
+          "type": "link"
+        }
+      ]
+    }
+  ],
+  "markdown": "## Blocos do space\n\nUm [link](https://web.dev/lcp) no texto.\n\n::cta{href=\"post:0199a000-0000-7000-8000-0000000000aa\" label=\"Leia o guia\" variant=\"primary\"}\n\n:::destaque{nivel=2 aberto cta-text=\"Veja\"}\nTexto **forte** do destaque.\n\n::cta{href=\"/contato\" label=\"Fale com a gente\"}\n:::\n\n::banner{titulo=\"Promoção\" link=\"https://stack201.com.br\"}\n\n:::note{type=\"tip\"}\nUma dica.\n:::",
+  "html": "<h2 id=\"blocos-do-space\">Blocos do space</h2>\n<p>Um <a href=\"https://web.dev/lcp\" rel=\"noopener\">link</a> no texto.</p>\n<div data-block=\"cta\" data-href=\"/blog/outro-post\" data-label=\"Leia o guia\" data-variant=\"primary\"></div>\n<div data-block=\"destaque\" data-nivel=\"2\" data-aberto=\"true\" data-cta-text=\"Veja\"><p>Texto <strong>forte</strong> do destaque.</p><div data-block=\"cta\" data-href=\"/contato\" data-label=\"Fale com a gente\"></div></div>\n<div data-block=\"banner\" data-titulo=\"Promoção\" data-link=\"https://stack201.com.br\"></div>\n<aside data-block=\"note\" data-type=\"tip\"><p>Uma dica.</p></aside>",
+  "hast": {
+    "type": "root",
+    "children": [
+      {
+        "type": "element",
+        "tagName": "h2",
+        "properties": {
+          "id": "blocos-do-space"
+        },
+        "children": [
+          {
+            "type": "text",
+            "value": "Blocos do space",
+            "position": {
+              "start": {
+                "line": 1,
+                "column": 4,
+                "offset": 3
+              },
+              "end": {
+                "line": 1,
+                "column": 19,
+                "offset": 18
+              }
+            }
+          }
+        ],
+        "position": {
+          "start": {
+            "line": 1,
+            "column": 1,
+            "offset": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 19,
+            "offset": 18
+          }
+        }
+      },
+      {
+        "type": "text",
+        "value": "\n"
+      },
+      {
+        "type": "element",
+        "tagName": "p",
+        "properties": {},
+        "children": [
+          {
+            "type": "text",
+            "value": "Um ",
+            "position": {
+              "start": {
+                "line": 3,
+                "column": 1,
+                "offset": 20
+              },
+              "end": {
+                "line": 3,
+                "column": 4,
+                "offset": 23
+              }
+            }
+          },
+          {
+            "type": "element",
+            "tagName": "a",
+            "properties": {
+              "href": "https://web.dev/lcp",
+              "rel": "noopener"
+            },
+            "children": [
+              {
+                "type": "text",
+                "value": "link",
+                "position": {
+                  "start": {
+                    "line": 3,
+                    "column": 5,
+                    "offset": 24
+                  },
+                  "end": {
+                    "line": 3,
+                    "column": 9,
+                    "offset": 28
+                  }
+                }
+              }
+            ],
+            "position": {
+              "start": {
+                "line": 3,
+                "column": 4,
+                "offset": 23
+              },
+              "end": {
+                "line": 3,
+                "column": 31,
+                "offset": 50
+              }
+            }
+          },
+          {
+            "type": "text",
+            "value": " no texto.",
+            "position": {
+              "start": {
+                "line": 3,
+                "column": 31,
+                "offset": 50
+              },
+              "end": {
+                "line": 3,
+                "column": 41,
+                "offset": 60
+              }
+            }
+          }
+        ],
+        "position": {
+          "start": {
+            "line": 3,
+            "column": 1,
+            "offset": 20
+          },
+          "end": {
+            "line": 3,
+            "column": 41,
+            "offset": 60
+          }
+        }
+      },
+      {
+        "type": "text",
+        "value": "\n"
+      },
+      {
+        "type": "element",
+        "tagName": "div",
+        "properties": {
+          "dataBlock": "cta",
+          "dataHref": "/blog/outro-post",
+          "dataLabel": "Leia o guia",
+          "dataVariant": "primary"
+        },
+        "children": []
+      },
+      {
+        "type": "text",
+        "value": "\n"
+      },
+      {
+        "type": "element",
+        "tagName": "div",
+        "properties": {
+          "dataBlock": "destaque",
+          "dataNivel": "2",
+          "dataAberto": "true",
+          "dataCtaText": "Veja"
+        },
+        "children": [
+          {
+            "type": "element",
+            "tagName": "p",
+            "properties": {},
+            "children": [
+              {
+                "type": "text",
+                "value": "Texto ",
+                "position": {
+                  "start": {
+                    "line": 8,
+                    "column": 1,
+                    "offset": 201
+                  },
+                  "end": {
+                    "line": 8,
+                    "column": 7,
+                    "offset": 207
+                  }
+                }
+              },
+              {
+                "type": "element",
+                "tagName": "strong",
+                "properties": {},
+                "children": [
+                  {
+                    "type": "text",
+                    "value": "forte",
+                    "position": {
+                      "start": {
+                        "line": 8,
+                        "column": 9,
+                        "offset": 209
+                      },
+                      "end": {
+                        "line": 8,
+                        "column": 14,
+                        "offset": 214
+                      }
+                    }
+                  }
+                ],
+                "position": {
+                  "start": {
+                    "line": 8,
+                    "column": 7,
+                    "offset": 207
+                  },
+                  "end": {
+                    "line": 8,
+                    "column": 16,
+                    "offset": 216
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "value": " do destaque.",
+                "position": {
+                  "start": {
+                    "line": 8,
+                    "column": 16,
+                    "offset": 216
+                  },
+                  "end": {
+                    "line": 8,
+                    "column": 29,
+                    "offset": 229
+                  }
+                }
+              }
+            ],
+            "position": {
+              "start": {
+                "line": 8,
+                "column": 1,
+                "offset": 201
+              },
+              "end": {
+                "line": 8,
+                "column": 29,
+                "offset": 229
+              }
+            }
+          },
+          {
+            "type": "element",
+            "tagName": "div",
+            "properties": {
+              "dataBlock": "cta",
+              "dataHref": "/contato",
+              "dataLabel": "Fale com a gente"
+            },
+            "children": []
+          }
+        ],
+        "position": {
+          "start": {
+            "line": 7,
+            "column": 1,
+            "offset": 157
+          },
+          "end": {
+            "line": 11,
+            "column": 4,
+            "offset": 282
+          }
+        }
+      },
+      {
+        "type": "text",
+        "value": "\n"
+      },
+      {
+        "type": "element",
+        "tagName": "div",
+        "properties": {
+          "dataBlock": "banner",
+          "dataTitulo": "Promoção",
+          "dataLink": "https://stack201.com.br"
+        },
+        "children": []
+      },
+      {
+        "type": "text",
+        "value": "\n"
+      },
+      {
+        "type": "element",
+        "tagName": "aside",
+        "properties": {
+          "dataBlock": "note",
+          "dataType": "tip"
+        },
+        "children": [
+          {
+            "type": "element",
+            "tagName": "p",
+            "properties": {},
+            "children": [
+              {
+                "type": "text",
+                "value": "Uma dica.",
+                "position": {
+                  "start": {
+                    "line": 16,
+                    "column": 1,
+                    "offset": 364
+                  },
+                  "end": {
+                    "line": 16,
+                    "column": 10,
+                    "offset": 373
+                  }
+                }
+              }
+            ],
+            "position": {
+              "start": {
+                "line": 16,
+                "column": 1,
+                "offset": 364
+              },
+              "end": {
+                "line": 16,
+                "column": 10,
+                "offset": 373
+              }
+            }
+          }
+        ],
+        "position": {
+          "start": {
+            "line": 15,
+            "column": 1,
+            "offset": 344
+          },
+          "end": {
+            "line": 17,
+            "column": 4,
+            "offset": 377
+          }
+        }
+      }
+    ],
+    "position": {
+      "start": {
+        "line": 1,
+        "column": 1,
+        "offset": 0
+      },
+      "end": {
+        "line": 17,
+        "column": 4,
+        "offset": 377
+      }
+    }
+  },
+  "issues": []
+}

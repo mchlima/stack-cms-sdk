@@ -5,7 +5,8 @@ Instruções para agentes de código que trabalham no `stack-cms-sdk`.
 ## Este repositório
 
 O pacote público `@stack201/cms-sdk` (TypeScript, ESM): cliente da Delivery API do **Stack CMS**, gerado do
-`openapi.json` da `stack-cms-api`, e as entradas `react`, `next`, `astro` e `webhooks`. Regras em
+`openapi.json` da `stack-cms-api`, o desenho dos blocos sem framework e as entradas `react`, `next`, `astro`
+(com o `CmsContent.astro`), `vue`, `svelte` e `webhooks`. Regras em
 [docs/spec.md](docs/spec.md).
 
 ## Comandos

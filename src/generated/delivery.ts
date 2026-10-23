@@ -415,6 +415,21 @@ export interface components {
             parents: components["schemas"]["TermLink"][];
             children: components["schemas"]["TermLink"][];
         };
+        CustomBlock: {
+            name: string;
+            container: boolean;
+            description?: string | null;
+            markdown?: string | null;
+            attributes: components["schemas"]["CustomBlockAttribute"][];
+        };
+        CustomBlockAttribute: {
+            name: string;
+            /** @enum {string} */
+            type: "string" | "number" | "boolean" | "enum" | "link";
+            required?: boolean;
+            description?: string | null;
+            values?: string[];
+        };
         DeliveryRedirect: {
             from: string;
             to: string | null;
@@ -444,16 +459,7 @@ export interface components {
                 sameAs: string[];
                 logo: components["schemas"]["Image"] | null;
             };
-            customBlocks: {
-                name: string;
-                container: boolean;
-                attributes: {
-                    name: string;
-                    /** @enum {string} */
-                    type: "string" | "number" | "boolean";
-                    required?: boolean;
-                }[];
-            }[];
+            customBlocks: components["schemas"]["CustomBlock"][];
             path: string;
             url: string;
             seo: components["schemas"]["ResolvedSeo"];
@@ -475,7 +481,7 @@ export interface components {
         Error: {
             error: {
                 /** @enum {string} */
-                code: "VALIDATION_FAILED" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "TOO_MANY_REQUESTS" | "INSUFFICIENT_SCOPE" | "PLAN_LIMIT" | "SLUG_TAKEN" | "VERSION_CONFLICT" | "READ_ONLY" | "INVALID_FILE" | "IN_USE" | "PUBLISH_BLOCKED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE";
+                code: "VALIDATION_FAILED" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "TOO_MANY_REQUESTS" | "INSUFFICIENT_SCOPE" | "PLAN_LIMIT" | "SLUG_TAKEN" | "VERSION_CONFLICT" | "READ_ONLY" | "INVALID_FILE" | "IN_USE" | "BLOCKS_IN_USE" | "PUBLISH_BLOCKED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE";
                 /** @description Em pt-BR, pode ser mostrada à pessoa */
                 message: string;
                 details: {

@@ -1488,6 +1488,80 @@
           "children"
         ]
       },
+      "CustomBlock": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{1,39}$"
+          },
+          "container": {
+            "type": "boolean"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 500
+          },
+          "markdown": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 300
+          },
+          "attributes": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomBlockAttribute"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "container",
+          "attributes"
+        ]
+      },
+      "CustomBlockAttribute": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,39}$"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "string",
+              "number",
+              "boolean",
+              "enum",
+              "link"
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 300
+          },
+          "values": {
+            "minItems": 1,
+            "maxItems": 30,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,39}$"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "type"
+        ]
+      },
       "DeliveryRedirect": {
         "type": "object",
         "properties": {
@@ -1618,49 +1692,7 @@
           "customBlocks": {
             "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "pattern": "^[a-z][a-z0-9-]{1,39}$"
-                },
-                "container": {
-                  "type": "boolean"
-                },
-                "attributes": {
-                  "maxItems": 20,
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "name": {
-                        "type": "string",
-                        "pattern": "^[a-z][a-z0-9-]{0,39}$"
-                      },
-                      "type": {
-                        "type": "string",
-                        "enum": [
-                          "string",
-                          "number",
-                          "boolean"
-                        ]
-                      },
-                      "required": {
-                        "type": "boolean"
-                      }
-                    },
-                    "required": [
-                      "name",
-                      "type"
-                    ]
-                  }
-                }
-              },
-              "required": [
-                "name",
-                "container",
-                "attributes"
-              ]
+              "$ref": "#/components/schemas/CustomBlock"
             }
           },
           "path": {
@@ -1764,6 +1796,7 @@
                   "READ_ONLY",
                   "INVALID_FILE",
                   "IN_USE",
+                  "BLOCKS_IN_USE",
                   "PUBLISH_BLOCKED",
                   "INTERNAL_ERROR",
                   "SERVICE_UNAVAILABLE"

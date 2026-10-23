@@ -10,13 +10,19 @@ Regras têm id `RS-NN` e critérios de aceite `CS-NN`. Decisões do Michel de 20
 
 - **RS-01** Um pacote só, `@stack201/cms-sdk`, público no npm, em TypeScript e ESM, com entradas separadas:
 
-  | Entrada                      | Para quê                                                                                             |
-  | ---------------------------- | ---------------------------------------------------------------------------------------------------- |
-  | `@stack201/cms-sdk`          | O cliente da Delivery API, sem depender de framework (só `fetch`)                                    |
-  | `@stack201/cms-sdk/react`    | `<CmsContent>`: desenha o `hast` do post, trocando blocos e elementos por componentes                |
-  | `@stack201/cms-sdk/next`     | Rotas prontas (sitemaps, feeds, `llms.txt`, `robots.txt`, IndexNow), redirecionamentos e revalidação |
-  | `@stack201/cms-sdk/astro`    | O _loader_ das coleções de conteúdo do Astro e as rotas prontas                                      |
-  | `@stack201/cms-sdk/webhooks` | Conferir a assinatura dos avisos do CMS                                                              |
+  | Entrada                                    | Para quê                                                                                             |
+  | ------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+  | `@stack201/cms-sdk`                        | O cliente da Delivery API e os blocos do conteúdo, sem depender de framework (RS-10, RS-13, RS-14)   |
+  | `@stack201/cms-sdk/react`                  | `<CmsContent>`: desenha o `hast` do post, trocando blocos e elementos por componentes (React e Next) |
+  | `@stack201/cms-sdk/next`                   | Rotas prontas (sitemaps, feeds, `llms.txt`, `robots.txt`, IndexNow), redirecionamentos e revalidação |
+  | `@stack201/cms-sdk/astro`                  | O _loader_ das coleções de conteúdo do Astro e as rotas prontas                                      |
+  | `@stack201/cms-sdk/astro/CmsContent.astro` | `<CmsContent>` do Astro (RS-11)                                                                      |
+  | `@stack201/cms-sdk/vue`                    | `<CmsContent>` do Vue 3 e do Nuxt (RS-11)                                                            |
+  | `@stack201/cms-sdk/svelte`                 | `<CmsContent>` do Svelte 5 e do SvelteKit (RS-11)                                                    |
+  | `@stack201/cms-sdk/webhooks`               | Conferir a assinatura dos avisos do CMS                                                              |
+
+  React, Vue, Svelte e Astro são dependências opcionais (`peerDependencies` com `optional`): quem usa um
+  framework não instala os outros.
 
 - **RS-02** Os tipos e as chamadas são gerados do `openapi.json` da `stack-cms-api`. A versão do SDK diz com qual
   versão da Delivery API ele fala, e uma mudança que quebra é uma versão maior.
@@ -35,7 +41,8 @@ Regras têm id `RS-NN` e critérios de aceite `CS-NN`. Decisões do Michel de 20
   `<CmsContent hast={post.hast} components={{ … }} blocks={{ … }} />` troca qualquer elemento (`img`, `a`,
   `table`), pela tag, e qualquer bloco (`answer`, `note`, `steps` e os blocos do space), pelo `data-block`, por um
   componente do site. Os dois ficam separados porque `table` é tag e também bloco. O bloco recebe o nome, os
-  atributos sem o `data-`, o `id` e o conteúdo já desenhado. O que não for trocado sai como o HTML do CMS.
+  atributos sem o `data-`, o `id` e o conteúdo já desenhado. O que não for trocado sai como o HTML do CMS, menos
+  os blocos do space sem componente (RS-12).
 - **RS-06** Helpers para o `<head>`: o SEO já resolvido do post (título, descrição, canonical, `robots`, Open Graph,
   `hreflang` com o `x-default`) e o JSON-LD em `<script type="application/ld+json">`, com os caracteres perigosos
   escapados.
@@ -56,7 +63,46 @@ Regras têm id `RS-NN` e critérios de aceite `CS-NN`. Decisões do Michel de 20
 - **RS-09** **Webhooks:** `verifyCmsWebhook(request, secret)` confere o HMAC, o horário (até 5 minutos) e devolve o
   evento tipado.
 
-## 5. Critérios de aceite
+## 5. Os blocos em qualquer framework
+
+Decisões do Michel de 2026-10-23.
+
+- **RS-10** **Núcleo sem framework**, na entrada principal: `readBlock(element, customBlocks?)` e
+  `blocksOf(hast, customBlocks?)` dão cada bloco com `name`, `attributes` (sem o `data-`, pelo nome do atributo:
+  `cta-text`), `id`, `custom` (se é bloco do space), os filhos e o `node`. Os blocos de todo space estão em
+  `CMS_BLOCKS` (`answer`, `note`, `steps`, `questions`, `takeaways`, `table`, `image`, `video`, `code`); qualquer
+  outro nome é bloco do space. As propriedades do `hast` vêm em camelCase (`dataCtaText`); a forma antiga
+  (`data-href`) continua aceita. Com a definição do bloco (`space.customBlocks`), `number` vira número e `boolean`
+  vira booleano; o resto (texto, `enum`, `link`) e tudo sem definição fica texto. `contentNodes(hast, options)`
+  corta o conteúdo onde entram os componentes do site, para os adaptadores; o que não tem componente dentro sai
+  como o HTML do CMS.
+- **RS-11** **Adaptadores finos**, todos com a mesma interface do `<CmsContent>` do React (`hast`, `blocks`,
+  `components`, `customBlocks`, `warn`), desenhando no servidor e sem estado:
+  - `react`: serve ao Next, inclusive em Server Components (sem hooks, sem `'use client'`);
+  - `vue`: componente com _render function_, serve ao Nuxt; o bloco recebe `name`, `attributes`, `id` e `node`
+    como props e o conteúdo no _slot_ padrão;
+  - `astro/CmsContent.astro`: aceita componentes do Astro e de qualquer framework que o site tenha no Astro; o
+    conteúdo chega no _slot_;
+  - `svelte`: Svelte 5, serve ao SvelteKit; os `.svelte` vão no pacote como estão e o _bundler_ do site os
+    compila; o conteúdo chega em `children`.
+
+  O componente de um elemento recebe, fora do React, os atributos como o HTML os escreve (`href`, `class`) e o
+  `node`.
+
+- **RS-12** **Bloco do space sem componente nunca quebra a página:** o de conteúdo deixa o conteúdo (sem o
+  `<div data-block>`), o sem conteúdo some, com um aviso (`console.warn`) em desenvolvimento
+  (`NODE_ENV` diferente de `production`, ou a opção `warn`). Com `customBlocks`, o aviso lista todos os blocos do
+  space sem componente, mesmo os que o post não usa; `missingBlocks(customBlocks, blocks)` dá a mesma lista para
+  conferir no build. Os blocos de todo space sem componente continuam saindo como o HTML do CMS.
+- **RS-13** `renderHtml(hast, { blocks, components?, customBlocks? })` dá o HTML para quem usa outro framework
+  ou HTML puro: cada bloco vira o que a função dele devolve (HTML, sem escapar: quem escreve escapa o que vem de
+  fora); o resto sai como o HTML do CMS.
+- **RS-14** **Tipos dos atributos:** `AttributesOf<Definição>` e `BlockAttributesMap<customBlocks>` dão os
+  atributos de uma definição `as const`; `blockTypes(customBlocks)` escreve o texto de um `.ts` com a interface
+  `CmsBlockAttributes`, e `npx cms-sdk blocks-types --out src/cms-blocks.ts` faz o mesmo lendo a Delivery API
+  (chave em `CMS_DELIVERY_KEY`). O componente de um bloco usa `BlockProps<CmsBlockAttributes['cta']>`.
+
+## 6. Critérios de aceite
 
 - **CS-01** Os tipos batem com o `openapi.json` publicado; mudar a API sem regenerar o SDK quebra a CI (RS-02).
 - **CS-02** `posts.get` de um endereço que não existe dá `CmsNotFoundError`; chave errada dá `CmsAuthError` (RS-04).
@@ -65,7 +111,12 @@ Regras têm id `RS-NN` e critérios de aceite `CS-NN`. Decisões do Michel de 20
 - **CS-05** Num site Next de exemplo, publicar no CMS revalida só as páginas afetadas (RS-07, RS-09).
 - **CS-06** Num site Astro de exemplo, os posts entram como coleção e as rotas prontas respondem (RS-08).
 - **CS-07** Aviso com assinatura errada ou fora dos 5 minutos é recusado (RS-09).
+- **CS-08** O mesmo post (blocos de todo space, blocos do space no formato novo, um dentro do outro) sai igual no
+  React, no Vue, no Svelte, no Astro e no `renderHtml`, com os atributos tipados pela definição (RS-10, RS-11,
+  RS-13).
+- **CS-09** Um bloco do space sem componente não quebra a página: o conteúdo fica, o bloco sem conteúdo some e há
+  um aviso em desenvolvimento (RS-12).
 
-## 6. O que o Michel precisa providenciar
+## 7. O que o Michel precisa providenciar
 
 A organização `@stack201` no npm e um token de publicação para o GitHub Actions do repositório.

@@ -17,3 +17,4 @@ export {
   siteFile,
   siteMarkdown,
 } from './site.js';
+export * from './content/index.js';

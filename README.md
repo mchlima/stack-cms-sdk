@@ -1,7 +1,7 @@
 # stack-cms-sdk
 
 SDK do **Stack CMS** (`@stack201/cms-sdk`): o cliente da Delivery API e o que os sites precisam para SEO, GEO e AEO,
-com entradas para React, Next e Astro.
+com entradas para React, Next, Astro, Vue e Svelte.
 
 - API: `mchlima/stack-cms-api` (https://cms-api.stack201.com.br).
 - Como desenvolver e as regras do repositório: [AGENTS.md](AGENTS.md). As regras do SDK: [docs/spec.md](docs/spec.md).
@@ -38,17 +38,107 @@ export async function POST(request: Request) {
 }
 ```
 
-Com React, o conteúdo e o `<head>`:
+### O conteúdo, com os componentes do site
+
+O CMS entrega cada post como `html` e `hast`. O `<CmsContent>` desenha o `hast` trocando cada bloco (os de todo
+space, como `note` e `answer`, e os do seu space, como `cta`) e cada elemento (`a`, `img`) por um componente do
+site. A interface é a mesma em todos os frameworks: `hast`, `blocks`, `components` e, opcional, `customBlocks`
+(o `space.customBlocks`, que tipa os atributos e avisa em desenvolvimento dos blocos sem componente). Um bloco do
+space sem componente nunca quebra a página: o conteúdo dele fica e o bloco sem conteúdo some.
+
+React e Next (também em Server Components):
 
 ```tsx
-import { CmsContent, CmsHead } from '@stack201/cms-sdk/react';
+import { CmsContent, CmsHead, type BlockProps } from '@stack201/cms-sdk/react';
+
+const Cta = ({ attributes }: BlockProps) => <a href={attributes.href}>{attributes.label}</a>;
 
 <CmsHead seo={post.seo} alternates={post.alternates} jsonLd={post.jsonLd} type="article" />
 <CmsContent hast={post.hast} components={{ a: Link, img: Image }} blocks={{ note: Callout, cta: Cta }} />
 ```
 
-Sem React, `headTags(page)` e `headHtml(page)` dão as mesmas tags do `<head>`, e `jsonLdString(data)` dá o JSON-LD
+Vue e Nuxt (o bloco recebe `name`, `attributes`, `id` e `node` como props e o conteúdo no _slot_):
+
+```vue
+<script setup lang="ts">
+import { CmsContent } from '@stack201/cms-sdk/vue';
+import Cta from '~/components/Cta.vue';
+import { NuxtLink } from '#components';
+</script>
+
+<template>
+  <CmsContent :hast="post.hast" :blocks="{ cta: Cta }" :components="{ a: NuxtLink }" />
+</template>
+```
+
+Astro (componentes do Astro ou de qualquer framework do site; o conteúdo chega no `<slot />`):
+
+```astro
+---
+import CmsContent from '@stack201/cms-sdk/astro/CmsContent.astro';
+import Cta from '../components/Cta.astro';
+import Callout from '../components/Callout.tsx';
+---
+
+<CmsContent hast={post.hast} blocks={{ cta: Cta, note: Callout }} components={{ a: Link }} />
+```
+
+Svelte 5 e SvelteKit (o conteúdo chega em `children`):
+
+```svelte
+<script lang="ts">
+  import { CmsContent } from '@stack201/cms-sdk/svelte';
+  import Cta from '$lib/Cta.svelte';
+  let { data } = $props();
+</script>
+
+<CmsContent hast={data.post.hast} blocks={{ cta: Cta }} />
+```
+
+Outro framework ou HTML puro: cada bloco vira o HTML que a função devolve (escape o que vier de fora); o resto sai
+como o HTML do CMS.
+
+```ts
+import { renderHtml } from '@stack201/cms-sdk';
+
+const html = renderHtml(post.hast, {
+  customBlocks: space.customBlocks,
+  blocks: {
+    cta: ({ attributes }) =>
+      `<a class="cta" href="${escape(attributes.href)}">${escape(attributes.label)}</a>`,
+    destaque: (block, children) => `<section class="destaque">${children}</section>`,
+  },
+});
+```
+
+`blocksOf(hast, customBlocks)` lista os blocos de um post, com os atributos tipados (`number` vira número,
+`boolean` vira booleano), e `missingBlocks(space.customBlocks, blocks)` diz quais blocos do space ainda não têm
+componente no site.
+
+Os tipos dos atributos de cada bloco do space saem da Delivery API:
+
+```sh
+CMS_DELIVERY_KEY=… npx cms-sdk blocks-types --out src/cms-blocks.ts
+```
+
+```tsx
+import type { CmsBlockAttributes } from './cms-blocks';
+
+const Cta = ({ attributes }: BlockProps<CmsBlockAttributes['cta']>) => (
+  <a href={attributes.href} data-variant={attributes.variant}>
+    {attributes.label}
+  </a>
+);
+```
+
+`blockTypes(customBlocks)` dá o mesmo texto, e `AttributesOf<typeof definicao>` tipa uma definição `as const`.
+
+### O `<head>`
+
+Com React, o `<CmsHead>` do exemplo acima. Sem React, `headTags(page)` e `headHtml(page)` dão as mesmas tags do `<head>`, e `jsonLdString(data)` dá o JSON-LD
 escapado.
+
+### Next e Astro
 
 Com Next (App Router), sem depender do pacote `next`:
 
