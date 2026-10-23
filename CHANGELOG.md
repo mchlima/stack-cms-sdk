@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.0](https://github.com/mchlima/stack-cms-sdk/compare/v0.4.1...v0.5.0) (2026-10-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **menus:** no cmsLoader do Astro, o id de uma subcategoria passa a ser o slugPath ("sites/desempenho"), e não mais o slug; as categorias de primeiro nível não mudam. Com o modelo {path}, categories.get com o slug sozinho de uma subcategoria dá 404: use o caminho. O feed de uma subcategoria passa a ser feeds/category-<caminho com ".">, e o CMS cria os 301; sites com o SDK até 0.4 precisam atualizar junto com a API.
+
+### Features
+
+* **menus:** menus, categorias pelo caminho e feeds no endereço da categoria ([#15](https://github.com/mchlima/stack-cms-sdk/issues/15)) ([e0d6291](https://github.com/mchlima/stack-cms-sdk/commit/e0d6291c5cbfc81579bdfdefb73905b50741fe8b))
+
 ## [0.4.1](https://github.com/mchlima/stack-cms-sdk/compare/v0.4.0...v0.4.1) (2026-10-23)
 
 
