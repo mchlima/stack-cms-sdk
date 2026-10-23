@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/mchlima/stack-cms-sdk/compare/v0.1.0...v0.2.0) (2026-10-23)
+
+
+### Features
+
+* **delivery:** tipo do autor (kind) no contrato da Delivery ([#7](https://github.com/mchlima/stack-cms-sdk/issues/7)) ([1b8864e](https://github.com/mchlima/stack-cms-sdk/commit/1b8864ec04e99f113975f0793631be807325696e))
+
 ## 0.1.0 (2026-10-22)
 
 
