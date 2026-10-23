@@ -1145,6 +1145,43 @@
           "posts"
         ]
       },
+      "AuthorLink": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "Person",
+              "Organization",
+              "Publisher"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "path",
+          "url",
+          "kind"
+        ]
+      },
       "AuthorPage": {
         "type": "object",
         "properties": {
@@ -1926,7 +1963,7 @@
           "authors": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TermLink"
+              "$ref": "#/components/schemas/AuthorLink"
             }
           },
           "categories": {
@@ -2080,7 +2117,7 @@
           "authors": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TermLink"
+              "$ref": "#/components/schemas/AuthorLink"
             }
           },
           "categories": {
