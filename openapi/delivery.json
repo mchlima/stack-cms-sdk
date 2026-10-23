@@ -1107,6 +1107,14 @@
           "url": {
             "type": "string"
           },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "Person",
+              "Organization",
+              "Publisher"
+            ]
+          },
           "jobTitle": {
             "nullable": true,
             "type": "string"
@@ -1131,6 +1139,7 @@
           "name",
           "path",
           "url",
+          "kind",
           "jobTitle",
           "avatar",
           "posts"
@@ -1154,6 +1163,14 @@
           },
           "url": {
             "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "Person",
+              "Organization",
+              "Publisher"
+            ]
           },
           "jobTitle": {
             "nullable": true,
@@ -1247,6 +1264,7 @@
           "name",
           "path",
           "url",
+          "kind",
           "jobTitle",
           "credentials",
           "bio",
