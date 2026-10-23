@@ -103,18 +103,36 @@ function typed(value: string, type: string | undefined): BlockValue {
   return value;
 }
 
+/** Schemes that run code in a browser, even with spaces or control characters in the middle. */
+const DANGEROUS = /^(?:javascript|data|vbscript):/i;
+const SAFE_LINK = /^(?:https?:\/\/|mailto:|tel:|\/(?!\/)|#)/i;
+
+const bare = (value: string) =>
+  Array.from(value, (c) => (c.charCodeAt(0) > 32 && c.charCodeAt(0) !== 127 ? c : '')).join('');
+
+/**
+ * Whether a value may reach a component: never a `javascript:`, `data:` or `vbscript:`, and a `link` only to
+ * `https://`, `http://`, `/caminho`, `#âncora`, `mailto:` or `tel:` (RS-15). The CMS already checks this; the
+ * SDK checks again, so a component that does `<a href={href}>` stays safe.
+ */
+function safe(value: string, type: string | undefined): boolean {
+  if (DANGEROUS.test(bare(value))) {
+    return false;
+  }
+  return type !== 'link' || SAFE_LINK.test(value.trim());
+}
+
 /** The attributes of a block, typed by its definition; without one, all of them are text. */
 export function blockAttributes(
   element: Element,
   definition?: BlockDefinition | null,
 ): BlockAttributes {
-  const raw = rawAttributes(element);
-  if (!definition) {
-    return raw;
-  }
   const attributes: BlockAttributes = {};
-  for (const [name, value] of Object.entries(raw)) {
-    attributes[name] = typed(value, definition.attributes.find((a) => a.name === name)?.type);
+  for (const [name, value] of Object.entries(rawAttributes(element))) {
+    const type = definition?.attributes.find((a) => a.name === name)?.type;
+    if (safe(value, type)) {
+      attributes[name] = definition ? typed(value, type) : value;
+    }
   }
   return attributes;
 }
