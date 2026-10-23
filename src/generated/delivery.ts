@@ -324,6 +324,8 @@ export interface components {
             name: string;
             path: string;
             url: string;
+            /** @enum {string} */
+            kind: "Person" | "Organization" | "Publisher";
             jobTitle: string | null;
             avatar: components["schemas"]["Image"] | null;
             posts: number;
@@ -335,6 +337,8 @@ export interface components {
             name: string;
             path: string;
             url: string;
+            /** @enum {string} */
+            kind: "Person" | "Organization" | "Publisher";
             jobTitle: string | null;
             credentials: string | null;
             bio: string | null;
