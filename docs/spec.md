@@ -114,8 +114,8 @@ Decisões do Michel de 2026-10-23.
 - **RS-16** **O caminho das mães:** toda categoria da Delivery (`CategoryItem`, `CategoryPage`, `CategoryLink` em
   `parent`, `parents` e `children`, e cada categoria de `post.categories`) tem `slugPath`, os slugs das mães e o
   dela (`sites/desempenho`), que é o `{path}` do modelo de endereço. `categories.get(ref)` aceita o `slugPath`, as
-  partes dele (`['sites', 'desempenho']`, como a rota _catch-all_ dá) ou o slug sozinho quando só uma categoria o
-  tem; cada `/` vai como `%2F`, num parâmetro só. O `resolve` dá o `slugPath` em `slug` para categorias. O site
+  partes dele (`['sites', 'desempenho']`, como a rota _catch-all_ dá) ou, só com o modelo `{slug}`, o slug
+  sozinho; cada `/` vai como `%2F`, num parâmetro só. O `resolve` dá o `slugPath` em `slug` para categorias. O site
   serve a categoria numa rota de vários níveis: `app/…/categoria/[...path]` no Next e
   `src/pages/…/categoria/[...path].astro` no Astro, com `cmsCategoryPaths(cms)` no `getStaticPaths`. No _loader_
   do Astro, a categoria tem o `slugPath` como id. O feed de uma categoria tem o caminho, com `.` no lugar de `/`
@@ -130,7 +130,8 @@ Decisões do Michel de 2026-10-23.
   tipos `Menu`, `MenuItem`, `MenuItemKind` e `MenuSummary` vêm do `openapi.json`. No Astro, `cmsMenu(cms, key,
 { locale })` lê um menu no build, e `cmsLoader(cms, { collection: 'menus' })` traz todos como coleção (id: a
   chave, ou `<locale>/<chave>`). O aviso `menu.updated` não traz `paths`: `menuChangeOf(event)` dá `key`,
-  `previousKey` (renomeado) e `deleted`; no Next, `createRevalidateRoute` revalida o que `onMenuUpdated(menu,
+  `previousKey` (renomeado), `deleted` e `reason` (`menu`, ou `pages` quando uma página do menu mudou de nome ou de
+  endereço, saiu do ar ou ganhou uma subcategoria); no Next, `createRevalidateRoute` revalida o que `onMenuUpdated(menu,
 event)` devolver (e o site chama `revalidateTag` ali, se marca a busca dos menus) ou, sem a opção, o site todo
   (`revalidatePath('/', 'layout')`), porque o menu costuma estar no _layout_.
 

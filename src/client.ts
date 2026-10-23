@@ -204,7 +204,7 @@ export function createCmsClient(options: CmsClientOptions) {
         get<CategoryItem[]>('/categories', query, options),
       /**
        * A category by its `slugPath` (`sites/desempenho`, or `['sites', 'desempenho']`), or by its slug
-       * alone when only one category has it.
+       * alone when the address model has `{slug}`.
        */
       get: (value: string | readonly string[], query: TermQuery = {}, options?: RequestOptions) =>
         get<CategoryPage>(`/categories/${categoryRef(value)}`, query, options),
