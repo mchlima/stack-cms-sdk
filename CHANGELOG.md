@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/mchlima/stack-cms-sdk/compare/v0.2.0...v0.3.0) (2026-10-23)
+
+
+### Features
+
+* **delivery:** tipo do autor nos autores de cada post ([#9](https://github.com/mchlima/stack-cms-sdk/issues/9)) ([6e1006a](https://github.com/mchlima/stack-cms-sdk/commit/6e1006a4dc78e334aa788b4a91128774e8bc9028))
+
 ## [0.2.0](https://github.com/mchlima/stack-cms-sdk/compare/v0.1.0...v0.2.0) (2026-10-23)
 
 
