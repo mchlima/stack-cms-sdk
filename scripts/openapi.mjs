@@ -9,7 +9,7 @@
  */
 import { readFile, writeFile } from 'node:fs/promises';
 
-const PUBLISHED = process.env.CMS_OPENAPI_URL ?? 'https://cms-api.stack201.com.br/openapi.json';
+const PUBLISHED = process.env.CMS_OPENAPI_URL ?? 'https://api.rasku.app/openapi.json';
 const FILE = new URL('../openapi/delivery.json', import.meta.url);
 
 async function load(source) {

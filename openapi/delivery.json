@@ -8,7 +8,7 @@
   },
   "servers": [
     {
-      "url": "https://cms-api.stack201.com.br"
+      "url": "https://api.rasku.app"
     }
   ],
   "paths": {

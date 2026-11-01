@@ -29,7 +29,8 @@ Regras têm id `RS-NN` e critérios de aceite `CS-NN`. Decisões do Michel de 20
 
 ## 2. O cliente
 
-- **RS-03** `createCmsClient({ apiKey, baseUrl?, locale?, fetch? })`. A chave `delivery` (ou `preview`, no modo de
+- **RS-03** `createCmsClient({ apiKey, baseUrl?, locale?, fetch? })`. Sem `baseUrl`, a API de produção,
+  `https://api.rasku.app` (até a 0.5.0, `https://cms-api.stack201.com.br`, que sai do ar). A chave `delivery` (ou `preview`, no modo de
   prévia) fica no servidor: o SDK avisa se for usado no navegador com uma chave `preview`.
 - **RS-04** As chamadas seguem a Delivery API: `space()`, `posts.list()`, `posts.get(slug)`, `tags`, `categories`,
   `authors`, `menus` (RS-17), `resolve(path)`, `redirects()`, `search(q)`. Cada uma devolve os dados tipados ou um erro tipado
