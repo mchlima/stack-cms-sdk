@@ -3,7 +3,7 @@
 SDK do **Stack CMS** (`@stack201/cms-sdk`): o cliente da Delivery API e o que os sites precisam para SEO, GEO e AEO,
 com entradas para React, Next, Astro, Vue e Svelte.
 
-- API: `mchlima/stack-cms-api` (https://cms-api.stack201.com.br).
+- API: `mchlima/stack-cms-api` (https://api.rasku.app; até 01/11/2026, https://cms-api.stack201.com.br, que sai do ar).
 - Como desenvolver e as regras do repositório: [AGENTS.md](AGENTS.md). As regras do SDK: [docs/spec.md](docs/spec.md).
 
 ## Uso

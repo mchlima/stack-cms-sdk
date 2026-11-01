@@ -32,7 +32,7 @@ describe('createCmsClient (RS-03, RS-04)', () => {
     await cms.posts.list({ tag: 'google', limit: 10 });
 
     const [call] = calls;
-    expect(call?.url.origin).toBe('https://cms-api.stack201.com.br');
+    expect(call?.url.origin).toBe('https://api.rasku.app');
     expect(call?.url.pathname).toBe('/delivery/v1/posts');
     expect(Object.fromEntries(call?.url.searchParams ?? [])).toEqual({
       tag: 'google',

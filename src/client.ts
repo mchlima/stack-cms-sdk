@@ -18,7 +18,7 @@ import type {
   TermQuery,
 } from './types.js';
 
-export const DEFAULT_BASE_URL = 'https://cms-api.stack201.com.br';
+export const DEFAULT_BASE_URL = 'https://api.rasku.app';
 
 export interface CmsClientOptions {
   /** A `delivery` key (or `preview`, to read drafts). Keep it on the server: read it from the environment. */
