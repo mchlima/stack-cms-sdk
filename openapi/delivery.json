@@ -2040,7 +2040,20 @@
                   "BLOCKS_IN_USE",
                   "PUBLISH_BLOCKED",
                   "INTERNAL_ERROR",
-                  "SERVICE_UNAVAILABLE"
+                  "SERVICE_UNAVAILABLE",
+                  "ORIGIN_NOT_ALLOWED",
+                  "TOO_MANY_ATTEMPTS",
+                  "CAPTCHA_FAILED",
+                  "INVALID_CREDENTIALS",
+                  "EMAIL_NOT_VERIFIED",
+                  "INVALID_LINK",
+                  "WRONG_PASSWORD",
+                  "LIMIT_REACHED",
+                  "SIGN_IN_TO_ACCEPT",
+                  "INVITATION_FOR_ANOTHER_EMAIL",
+                  "IMPERSONATION_NOT_ALLOWED",
+                  "ACCOUNT_SUSPENDED",
+                  "LAST_OWNER"
                 ]
               },
               "message": {
@@ -2819,13 +2832,13 @@
                 "type": "string",
                 "format": "uuid"
               },
-              "slug": {
+              "name": {
                 "type": "string"
               }
             },
             "required": [
               "id",
-              "slug"
+              "name"
             ]
           },
           "data": {
