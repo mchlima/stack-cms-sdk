@@ -553,7 +553,7 @@ export interface components {
         Error: {
             error: {
                 /** @enum {string} */
-                code: "VALIDATION_FAILED" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "TOO_MANY_REQUESTS" | "INSUFFICIENT_SCOPE" | "PLAN_LIMIT" | "SLUG_TAKEN" | "VERSION_CONFLICT" | "READ_ONLY" | "INVALID_FILE" | "IN_USE" | "BLOCKS_IN_USE" | "PUBLISH_BLOCKED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE";
+                code: "VALIDATION_FAILED" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "TOO_MANY_REQUESTS" | "INSUFFICIENT_SCOPE" | "PLAN_LIMIT" | "SLUG_TAKEN" | "VERSION_CONFLICT" | "READ_ONLY" | "INVALID_FILE" | "IN_USE" | "BLOCKS_IN_USE" | "PUBLISH_BLOCKED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "ORIGIN_NOT_ALLOWED" | "TOO_MANY_ATTEMPTS" | "CAPTCHA_FAILED" | "INVALID_CREDENTIALS" | "EMAIL_NOT_VERIFIED" | "INVALID_LINK" | "WRONG_PASSWORD" | "LIMIT_REACHED" | "SIGN_IN_TO_ACCEPT" | "INVITATION_FOR_ANOTHER_EMAIL" | "IMPERSONATION_NOT_ALLOWED" | "ACCOUNT_SUSPENDED" | "LAST_OWNER";
                 /** @description Em pt-BR, pode ser mostrada à pessoa */
                 message: string;
                 details: {
@@ -740,7 +740,7 @@ export interface components {
             space: {
                 /** Format: uuid */
                 id: string;
-                slug: string;
+                name: string;
             };
             data: {
                 [key: string]: unknown;
