@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.7.0](https://github.com/mchlima/stack-cms-sdk/compare/v0.6.0...v0.7.0) (2026-11-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* SitePayload.space.slug sai; use space.id ou space.name.
+
+### Features
+
+* o aviso dos webhooks manda o nome do espaço no lugar do slug ([#19](https://github.com/mchlima/stack-cms-sdk/issues/19)) ([6556e29](https://github.com/mchlima/stack-cms-sdk/commit/6556e29fee5d664248bdada40a34da9b7f807c11))
+
 ## [0.6.0](https://github.com/mchlima/stack-cms-sdk/compare/v0.5.0...v0.6.0) (2026-11-01)
 
 
