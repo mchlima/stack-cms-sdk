@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.8.0](https://github.com/mchlima/stack-cms-sdk/compare/v0.7.0...v0.8.0) (2026-11-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* a conta é o site: cms.site() no lugar de cms.space() ([#21](https://github.com/mchlima/stack-cms-sdk/issues/21))
+
+### Features
+
+* a conta é o site: cms.site() no lugar de cms.space() ([#21](https://github.com/mchlima/stack-cms-sdk/issues/21)) ([f08b4dd](https://github.com/mchlima/stack-cms-sdk/commit/f08b4dd81a9fa1aa039f2db876161ed020121b66))
+
 ## [0.7.0](https://github.com/mchlima/stack-cms-sdk/compare/v0.6.0...v0.7.0) (2026-11-02)
 
 
