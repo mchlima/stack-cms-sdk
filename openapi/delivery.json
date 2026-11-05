@@ -1204,7 +1204,6 @@
             "type": "string",
             "enum": [
               "Person",
-              "Organization",
               "Publisher"
             ]
           },
@@ -1261,7 +1260,6 @@
             "type": "string",
             "enum": [
               "Person",
-              "Organization",
               "Publisher"
             ]
           }
@@ -1298,7 +1296,6 @@
             "type": "string",
             "enum": [
               "Person",
-              "Organization",
               "Publisher"
             ]
           },
@@ -2036,6 +2033,7 @@
                   "VERSION_CONFLICT",
                   "READ_ONLY",
                   "INVALID_FILE",
+                  "AUTHOR_NOT_ELIGIBLE",
                   "IN_USE",
                   "BLOCKS_IN_USE",
                   "PUBLISH_BLOCKED",
