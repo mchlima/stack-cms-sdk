@@ -83,9 +83,9 @@ export const CmsContent = defineComponent({
       type: Object as PropType<Record<string, Component | string>>,
       default: () => ({}),
     },
-    /** `space.customBlocks`: types the attributes and warns about blocks without a component. */
+    /** `site.customBlocks`: types the attributes and warns about blocks without a component. */
     customBlocks: { type: Array as PropType<readonly BlockDefinition[] | null>, default: null },
-    /** Warns about blocks of the space without a component; in development by default. */
+    /** Warns about blocks of the site without a component; in development by default. */
     warn: { type: Boolean as PropType<boolean | undefined>, default: undefined },
   },
   setup(props) {

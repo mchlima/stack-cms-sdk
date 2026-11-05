@@ -27,7 +27,7 @@ export type AttributesOf<D extends BlockDefinition> = Simplify<
   }
 >;
 
-/** The attributes of each block of the space, by name, from `customBlocks` `as const`. */
+/** The attributes of each block of the site, by name, from `customBlocks` `as const`. */
 export type BlockAttributesMap<Defs extends readonly BlockDefinition[]> = {
   [D in Defs[number] as D['name']]: AttributesOf<D>;
 };
@@ -62,8 +62,8 @@ export interface BlockTypesOptions {
 }
 
 /**
- * RS-14: the text of a `.ts` (or `.d.ts`) with the attributes of each block of the space, from
- * `space.customBlocks`. `npx cms-sdk blocks-types` writes it from the Delivery API.
+ * RS-14: the text of a `.ts` (or `.d.ts`) with the attributes of each block of the site, from
+ * `site.customBlocks`. `npx cms-sdk blocks-types` writes it from the Delivery API.
  */
 export function blockTypes(
   customBlocks: readonly (BlockDefinition & Described)[],
@@ -86,8 +86,8 @@ export function blockTypes(
     })
     .join('');
   return (
-    '// Gerado por @stack201/cms-sdk (blockTypes) a partir de space.customBlocks. Não edite à mão.\n\n' +
-    `/** Os atributos de cada bloco do space, pelo nome. */\nexport interface ${name} {\n${blocks}}\n\n` +
+    '// Gerado por @stack201/cms-sdk (blockTypes) a partir de site.customBlocks. Não edite à mão.\n\n' +
+    `/** Os atributos de cada bloco do site, pelo nome. */\nexport interface ${name} {\n${blocks}}\n\n` +
     `export type CmsCustomBlockName = keyof ${name};\n`
   );
 }

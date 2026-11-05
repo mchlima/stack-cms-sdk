@@ -3,8 +3,8 @@ import type { components, operations } from './generated/delivery.js';
 /** The types of the Delivery API, generated from its `openapi.json` (RS-02): never written by hand. */
 type Schemas = components['schemas'];
 
-export type Space = Schemas['DeliverySpace'];
-/** A block of the space (`space.customBlocks`), with its typed attributes. */
+export type Site = Schemas['DeliverySite'];
+/** A block of the site (`site.customBlocks`), with its typed attributes. */
 export type CustomBlock = Schemas['CustomBlock'];
 export type CustomBlockAttribute = Schemas['CustomBlockAttribute'];
 export type PostCard = Schemas['PostCard'];
@@ -20,12 +20,12 @@ export type CategoryLink = Schemas['CategoryLink'];
 export type PostCategory = PostCard['categories'][number];
 export type AuthorItem = Schemas['AuthorItem'];
 export type AuthorPage = Schemas['AuthorPage'];
-/** A menu of the space, without the items (`menus.list()`). */
+/** A menu of the site, without the items (`menus.list()`). */
 export type MenuSummary = Schemas['DeliveryMenuSummary'];
 /** A menu in a language, with the tree of items already resolved and without the hidden ones. */
 export type Menu = Schemas['DeliveryMenu'];
 export type MenuItem = Schemas['DeliveryMenuItem'];
-/** Where an item leads: nothing (it only groups), a link (`url`) or a page of the space (`targetId`). */
+/** Where an item leads: nothing (it only groups), a link (`url`) or a page of the site (`targetId`). */
 export type MenuItemKind = MenuItem['kind'];
 export type ResolvedPath = Schemas['ResolvedPath'];
 export type Redirect = Schemas['DeliveryRedirect'];

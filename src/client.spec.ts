@@ -80,7 +80,7 @@ describe('createCmsClient (RS-03, RS-04)', () => {
       apiKey: 'scms_dlv_errada',
       fetch: fakeFetch(() => apiError(401, 'UNAUTHENTICATED', 'Entre de novo.')).fetch,
     });
-    await expect(wrongKey.space()).rejects.toBeInstanceOf(CmsAuthError);
+    await expect(wrongKey.site()).rejects.toBeInstanceOf(CmsAuthError);
   });
 
   it('too many requests says when to try again; other failures are CmsError', async () => {
@@ -92,7 +92,7 @@ describe('createCmsClient (RS-03, RS-04)', () => {
         }),
       ).fetch,
     });
-    const error = await limited.space().catch((e: unknown) => e);
+    const error = await limited.site().catch((e: unknown) => e);
     expect(error).toBeInstanceOf(CmsRateLimitError);
     expect((error as CmsRateLimitError).retryAfter).toBe(12);
 
@@ -100,23 +100,23 @@ describe('createCmsClient (RS-03, RS-04)', () => {
       apiKey: KEY,
       fetch: fakeFetch(() => new Response('bad gateway', { status: 502 })).fetch,
     });
-    await expect(broken.space()).rejects.toMatchObject({ status: 502, code: 'UNKNOWN' });
-    await expect(broken.space()).rejects.toBeInstanceOf(CmsError);
+    await expect(broken.site()).rejects.toMatchObject({ status: 502, code: 'UNKNOWN' });
+    await expect(broken.site()).rejects.toBeInstanceOf(CmsError);
   });
 
   it('request passes the ETag and tells when the copy of the site is current (RN-43)', async () => {
     const { fetch, calls } = fakeFetch((url) =>
       url.searchParams.has('fresh')
-        ? json({ id: 'space' }, 200, { ETag: 'W/"1"' })
+        ? json({ id: 'site' }, 200, { ETag: 'W/"1"' })
         : new Response(null, { status: 304, headers: { ETag: 'W/"1"' } }),
     );
     const cms = createCmsClient({ apiKey: KEY, fetch });
-    expect(await cms.request('/space', { fresh: 1 })).toEqual({
+    expect(await cms.request('/site', { fresh: 1 })).toEqual({
       notModified: false,
-      data: { id: 'space' },
+      data: { id: 'site' },
       etag: 'W/"1"',
     });
-    expect(await cms.request('/space', {}, { ifNoneMatch: 'W/"1"' })).toEqual({
+    expect(await cms.request('/site', {}, { ifNoneMatch: 'W/"1"' })).toEqual({
       notModified: true,
       data: null,
       etag: 'W/"1"',

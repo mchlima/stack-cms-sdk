@@ -15,7 +15,7 @@ import {
 
 /** What a block of the CMS gives to the component that takes its place (RS-05). */
 export interface BlockProps<A extends BlockAttributes = Record<string, string>> {
-  /** `answer`, `note`, `steps`, `image`, `video`, `table`, `code` or a block of the space. */
+  /** `answer`, `note`, `steps`, `image`, `video`, `table`, `code` or a block of the site. */
   name: string;
   /**
    * The attributes of the block, without the `data-`: `{ type: 'warning' }`, `{ href, label }`. Text, or
@@ -48,11 +48,11 @@ export interface CmsContentProps {
   /** Blocks replaced by components of the site, by the `data-block`: `{ note: Callout, cta: Cta }`. */
   blocks?: Record<string, BlockComponent>;
   /**
-   * `space.customBlocks`: types the attributes (`number`, `boolean`) and warns, in development, about the
-   * blocks of the space without a component (RS-12).
+   * `site.customBlocks`: types the attributes (`number`, `boolean`) and warns, in development, about the
+   * blocks of the site without a component (RS-12).
    */
   customBlocks?: readonly BlockDefinition[] | null;
-  /** Warns about blocks of the space without a component; in development by default. */
+  /** Warns about blocks of the site without a component; in development by default. */
   warn?: boolean;
 }
 
@@ -73,7 +73,7 @@ interface Context {
 }
 
 /**
- * Puts a slot where each replaced block is; a block of the space without a component leaves its content
+ * Puts a slot where each replaced block is; a block of the site without a component leaves its content
  * (RS-12); everything else stays as the CMS made it.
  */
 function withSlots<T extends Root | Element>(node: T, context: Context): T {

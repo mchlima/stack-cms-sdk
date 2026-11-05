@@ -12,9 +12,9 @@
     }
   ],
   "paths": {
-    "/delivery/v1/space": {
+    "/delivery/v1/site": {
       "get": {
-        "operationId": "deliverySpace",
+        "operationId": "deliverySite",
         "parameters": [
           {
             "name": "locale",
@@ -33,7 +33,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DeliverySpace"
+                  "$ref": "#/components/schemas/DeliverySite"
                 }
               }
             }
@@ -1748,7 +1748,7 @@
               "tag",
               "author"
             ],
-            "description": "Para onde o item leva: nada (só agrupa), um link (url) ou uma página do space (targetId)."
+            "description": "Para onde o item leva: nada (só agrupa), um link (url) ou uma página do site (targetId)."
           },
           "href": {
             "nullable": true,
@@ -1825,7 +1825,7 @@
           "status"
         ]
       },
-      "DeliverySpace": {
+      "DeliverySite": {
         "type": "object",
         "properties": {
           "id": {
@@ -2053,6 +2053,13 @@
                   "INVITATION_FOR_ANOTHER_EMAIL",
                   "IMPERSONATION_NOT_ALLOWED",
                   "ACCOUNT_SUSPENDED",
+                  "SUBSCRIPTION_REQUIRED",
+                  "DELIVERY_SUSPENDED",
+                  "ACCOUNT_ADMIN_REQUIRED",
+                  "CARD_DECLINED",
+                  "CARD_REQUIRED",
+                  "BILLING_UNAVAILABLE",
+                  "BILLING_STATE",
                   "LAST_OWNER"
                 ]
               },
@@ -2816,7 +2823,7 @@
               "post.updated",
               "post.unpublished",
               "taxonomy.updated",
-              "space.updated",
+              "site.updated",
               "redirects.updated",
               "menu.updated"
             ]
@@ -2825,7 +2832,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "space": {
+          "site": {
             "type": "object",
             "properties": {
               "id": {
@@ -2862,7 +2869,7 @@
           "id",
           "type",
           "occurredAt",
-          "space",
+          "site",
           "data",
           "paths",
           "urls"
@@ -3070,7 +3077,7 @@
       "deliveryKey": {
         "type": "http",
         "scheme": "bearer",
-        "description": "Chave de API `delivery` (`scms_dlv_…`) ou `preview` (`scms_prv_…`) do space: ela diz o space."
+        "description": "Chave de API `delivery` (`scms_dlv_…`) ou `preview` (`scms_prv_…`) da conta: ela diz a conta."
       }
     }
   }

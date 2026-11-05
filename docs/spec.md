@@ -32,7 +32,7 @@ Regras têm id `RS-NN` e critérios de aceite `CS-NN`. Decisões do Michel de 20
 - **RS-03** `createCmsClient({ apiKey, baseUrl?, locale?, fetch? })`. Sem `baseUrl`, a API de produção,
   `https://api.rasku.app` (até a 0.5.0, `https://cms-api.stack201.com.br`, que sai do ar). A chave `delivery` (ou `preview`, no modo de
   prévia) fica no servidor: o SDK avisa se for usado no navegador com uma chave `preview`.
-- **RS-04** As chamadas seguem a Delivery API: `space()`, `posts.list()`, `posts.get(slug)`, `tags`, `categories`,
+- **RS-04** As chamadas seguem a Delivery API: `site()`, `posts.list()`, `posts.get(slug)`, `tags`, `categories`,
   `authors`, `menus` (RS-17), `resolve(path)`, `redirects()`, `search(q)`. Cada uma devolve os dados tipados ou um erro tipado
   (`CmsNotFoundError`, `CmsAuthError`, `CmsRateLimitError`), e repassa `ETag` e `If-None-Match`.
 
@@ -40,10 +40,10 @@ Regras têm id `RS-NN` e critérios de aceite `CS-NN`. Decisões do Michel de 20
 
 - **RS-05** O site pode usar o `html` pronto ou o `hast`. O
   `<CmsContent hast={post.hast} components={{ … }} blocks={{ … }} />` troca qualquer elemento (`img`, `a`,
-  `table`), pela tag, e qualquer bloco (`answer`, `note`, `steps` e os blocos do space), pelo `data-block`, por um
+  `table`), pela tag, e qualquer bloco (`answer`, `note`, `steps` e os blocos do site), pelo `data-block`, por um
   componente do site. Os dois ficam separados porque `table` é tag e também bloco. O bloco recebe o nome, os
   atributos sem o `data-`, o `id` e o conteúdo já desenhado. O que não for trocado sai como o HTML do CMS, menos
-  os blocos do space sem componente (RS-12).
+  os blocos do site sem componente (RS-12).
 - **RS-06** Helpers para o `<head>`: o SEO já resolvido do post (título, descrição, canonical, `robots`, Open Graph,
   `hreflang` com o `x-default`) e o JSON-LD em `<script type="application/ld+json">`, com os caracteres perigosos
   escapados.
@@ -61,7 +61,7 @@ Regras têm id `RS-NN` e critérios de aceite `CS-NN`. Decisões do Michel de 20
   - as mesmas rotas prontas;
   - os redirecionamentos gerados para o `astro.config`.
     É o que o site da Stack201 vai usar no lugar dos MDX. O rebuild na Vercel vem de um _Deploy Hook_ cadastrado como
-    webhook do space: o SDK não precisa conferir a assinatura, porque a Vercel só refaz o site.
+    webhook do site: o SDK não precisa conferir a assinatura, porque a Vercel só refaz o site.
 - **RS-09** **Webhooks:** `verifyCmsWebhook(request, secret)` confere o HMAC, o horário (até 5 minutos) e devolve o
   evento tipado.
 
@@ -71,10 +71,10 @@ Decisões do Michel de 2026-10-23.
 
 - **RS-10** **Núcleo sem framework**, na entrada principal: `readBlock(element, customBlocks?)` e
   `blocksOf(hast, customBlocks?)` dão cada bloco com `name`, `attributes` (sem o `data-`, pelo nome do atributo:
-  `cta-text`), `id`, `custom` (se é bloco do space), os filhos e o `node`. Os blocos de todo space estão em
+  `cta-text`), `id`, `custom` (se é bloco do site), os filhos e o `node`. Os blocos de todo site estão em
   `CMS_BLOCKS` (`answer`, `note`, `steps`, `questions`, `takeaways`, `table`, `image`, `video`, `code`); qualquer
-  outro nome é bloco do space. As propriedades do `hast` vêm em camelCase (`dataCtaText`); a forma antiga
-  (`data-href`) continua aceita. Com a definição do bloco (`space.customBlocks`), `number` vira número e `boolean`
+  outro nome é bloco do site. As propriedades do `hast` vêm em camelCase (`dataCtaText`); a forma antiga
+  (`data-href`) continua aceita. Com a definição do bloco (`site.customBlocks`), `number` vira número e `boolean`
   vira booleano; o resto (texto, `enum`, `link`) e tudo sem definição fica texto. `contentNodes(hast, options)`
   corta o conteúdo onde entram os componentes do site, para os adaptadores; o que não tem componente dentro sai
   como o HTML do CMS.
@@ -91,11 +91,11 @@ Decisões do Michel de 2026-10-23.
   O componente de um elemento recebe, fora do React, os atributos como o HTML os escreve (`href`, `class`) e o
   `node`.
 
-- **RS-12** **Bloco do space sem componente nunca quebra a página:** o de conteúdo deixa o conteúdo (sem o
+- **RS-12** **Bloco do site sem componente nunca quebra a página:** o de conteúdo deixa o conteúdo (sem o
   `<div data-block>`), o sem conteúdo some, com um aviso (`console.warn`) em desenvolvimento
   (`NODE_ENV` diferente de `production`, ou a opção `warn`). Com `customBlocks`, o aviso lista todos os blocos do
-  space sem componente, mesmo os que o post não usa; `missingBlocks(customBlocks, blocks)` dá a mesma lista para
-  conferir no build. Os blocos de todo space sem componente continuam saindo como o HTML do CMS.
+  site sem componente, mesmo os que o post não usa; `missingBlocks(customBlocks, blocks)` dá a mesma lista para
+  conferir no build. Os blocos de todo site sem componente continuam saindo como o HTML do CMS.
 - **RS-13** `renderHtml(hast, { blocks, components?, customBlocks? })` dá o HTML para quem usa outro framework
   ou HTML puro: cada bloco vira o que a função dele devolve (HTML, sem escapar: quem escreve escapa o que vem de
   fora); o resto sai como o HTML do CMS.
@@ -145,15 +145,15 @@ event)` devolver (e o site chama `revalidateTag` ali, se marca a busca dos menus
 
 - **CS-01** Os tipos batem com o `openapi.json` publicado; mudar a API sem regenerar o SDK quebra a CI (RS-02).
 - **CS-02** `posts.get` de um endereço que não existe dá `CmsNotFoundError`; chave errada dá `CmsAuthError` (RS-04).
-- **CS-03** `<CmsContent>` troca um bloco do space pelo componente do site e mantém o resto igual ao `html` (RS-05).
+- **CS-03** `<CmsContent>` troca um bloco do site pelo componente do site e mantém o resto igual ao `html` (RS-05).
 - **CS-04** O JSON-LD com `</script>` no texto sai escapado (RS-06).
 - **CS-05** Num site Next de exemplo, publicar no CMS revalida só as páginas afetadas (RS-07, RS-09).
 - **CS-06** Num site Astro de exemplo, os posts entram como coleção e as rotas prontas respondem (RS-08).
 - **CS-07** Aviso com assinatura errada ou fora dos 5 minutos é recusado (RS-09).
-- **CS-08** O mesmo post (blocos de todo space, blocos do space no formato novo, um dentro do outro) sai igual no
+- **CS-08** O mesmo post (blocos de todo site, blocos do site no formato novo, um dentro do outro) sai igual no
   React, no Vue, no Svelte, no Astro e no `renderHtml`, com os atributos tipados pela definição (RS-10, RS-11,
   RS-13).
-- **CS-09** Um bloco do space sem componente não quebra a página: o conteúdo fica, o bloco sem conteúdo some e há
+- **CS-09** Um bloco do site sem componente não quebra a página: o conteúdo fica, o bloco sem conteúdo some e há
   um aviso em desenvolvimento (RS-12).
 
 - **CS-10** `categories.get('sites/desempenho')` e `categories.get(['sites', 'desempenho'])` chamam

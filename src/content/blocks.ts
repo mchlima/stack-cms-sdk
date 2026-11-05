@@ -2,7 +2,7 @@ import type { Element, ElementContent, Root, RootContent } from 'hast';
 
 /**
  * RS-10: the blocks of the CMS without a framework. Each block of the `hast` is an element with
- * `dataBlock`; the blocks of every space are below, any other name is a block of the space.
+ * `dataBlock`; the blocks of every site are below, any other name is a block of the site.
  */
 export const CMS_BLOCKS = [
   'answer',
@@ -17,7 +17,7 @@ export const CMS_BLOCKS = [
   'unknown',
 ] as const;
 
-/** A block that every space has. */
+/** A block that every site has. */
 export type CmsBlockName = (typeof CMS_BLOCKS)[number];
 
 /** A value of an attribute: `number` and `boolean` when the definition of the block says so. */
@@ -26,7 +26,7 @@ export type BlockValue = string | number | boolean;
 /** The attributes of a block, without the `data-`. */
 export type BlockAttributes = Record<string, BlockValue | undefined>;
 
-/** The part of a definition of a block (`space.customBlocks`) the SDK reads; `as const` works too. */
+/** The part of a definition of a block (`site.customBlocks`) the SDK reads; `as const` works too. */
 export interface BlockDefinition {
   name: string;
   container?: boolean;
@@ -42,13 +42,13 @@ export interface BlockAttributeDefinition {
 
 /** A block of the content, as the CMS made it (RS-10). */
 export interface CmsBlock<A extends BlockAttributes = BlockAttributes> {
-  /** `answer`, `note`, `steps`, `image`, `video`, `table`, `code` or a block of the space (`cta`). */
+  /** `answer`, `note`, `steps`, `image`, `video`, `table`, `code` or a block of the site (`cta`). */
   name: string;
   /** The attributes without the `data-`, typed by the definition of the block when there is one. */
   attributes: A;
   /** The `id` of the block, when it has one (the answer, for the table of contents). */
   id?: string;
-  /** Whether it is a block of the space (and not one of every space). */
+  /** Whether it is a block of the site (and not one of every site). */
   custom: boolean;
   /** The content of the block. */
   children: ElementContent[];
@@ -58,7 +58,7 @@ export interface CmsBlock<A extends BlockAttributes = BlockAttributes> {
 
 const BUILT_IN = new Set<string>(CMS_BLOCKS);
 
-/** Whether a block is one of the space, and not one of every space. */
+/** Whether a block is one of the site, and not one of every site. */
 export const isCustomBlock = (name: string): boolean => !BUILT_IN.has(name);
 
 /** The name of the block of an element (its `data-block`), or `null`. */
@@ -189,7 +189,7 @@ const namesOf = (names: BlockNames | undefined): Set<string> =>
         : Object.keys(names),
   );
 
-/** The blocks of the space that the site has no component for (RS-12). */
+/** The blocks of the site that the site has no component for (RS-12). */
 export function missingBlocks(
   customBlocks: readonly BlockDefinition[] | null | undefined,
   blocks: BlockNames | undefined,
@@ -220,14 +220,14 @@ export function warnOnce(message: string): void {
   }
 }
 
-/** The warning of a block of the space without a component in the site (RS-12). */
+/** The warning of a block of the site without a component in the site (RS-12). */
 export function warnMissingBlock(name: string): void {
   warnOnce(
-    `O bloco "${name}" do space não tem componente no site: o conteúdo dele sai sem ele (e some, se não tiver conteúdo). Passe-o em blocks.`,
+    `O bloco "${name}" do site não tem componente no site: o conteúdo dele sai sem ele (e some, se não tiver conteúdo). Passe-o em blocks.`,
   );
 }
 
-/** Warns about every block of the space without a component, when there is a definition. */
+/** Warns about every block of the site without a component, when there is a definition. */
 export function warnMissingBlocks(
   customBlocks: readonly BlockDefinition[] | null | undefined,
   blocks: BlockNames | undefined,

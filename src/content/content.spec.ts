@@ -79,7 +79,7 @@ describe('the blocks of the content (RS-10)', () => {
     expect(readBlock(ok, [definition])?.attributes).toEqual({ href: '/planos', label: 'Oi' });
   });
 
-  it('RS-12: says which blocks of the space have no component', () => {
+  it('RS-12: says which blocks of the site have no component', () => {
     expect(missingBlocks(customBlocks, { cta: () => '' })).toEqual(['destaque', 'banner']);
     expect(missingBlocks(customBlocks, ['cta', 'destaque', 'banner'])).toEqual([]);
     expect(missingBlocks(null, {})).toEqual([]);
@@ -92,7 +92,7 @@ describe('renderHtml (RS-13)', () => {
   const destaque = (block: CmsBlock, children: string) =>
     `<section class="destaque" data-types="${typeof block.attributes.nivel} ${typeof block.attributes.aberto}">${children}</section>`;
 
-  it('without replacements, gives the HTML of the CMS, without the blocks of the space', () => {
+  it('without replacements, gives the HTML of the CMS, without the blocks of the site', () => {
     expect(tree(renderHtml(fixture.hast, { warn: false }))).toEqual(
       tree(withoutCustomBlocks(fixture.html)),
     );
@@ -112,7 +112,7 @@ describe('renderHtml (RS-13)', () => {
     );
   });
 
-  it('replaces blocks of the space, nested ones and elements, with typed attributes', () => {
+  it('replaces blocks of the site, nested ones and elements, with typed attributes', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const html = renderHtml(custom.hast, {
       customBlocks,
@@ -130,7 +130,7 @@ describe('renderHtml (RS-13)', () => {
     warn.mockRestore();
   });
 
-  it('a block of the space with content and no component leaves its content', () => {
+  it('a block of the site with content and no component leaves its content', () => {
     const html = renderHtml(custom.hast, { blocks: { cta }, warn: false });
     expect(html).toContain(
       '<p>Texto <strong>forte</strong> do destaque.</p><a class="cta" href="/contato">',
@@ -162,11 +162,11 @@ describe('the types of the attributes (RS-14)', () => {
     }>();
   });
 
-  it('writes the types of the blocks of the space', () => {
+  it('writes the types of the blocks of the site', () => {
     expect(blockTypes(customBlocks))
-      .toBe(`// Gerado por @stack201/cms-sdk (blockTypes) a partir de space.customBlocks. Não edite à mão.
+      .toBe(`// Gerado por @stack201/cms-sdk (blockTypes) a partir de site.customBlocks. Não edite à mão.
 
-/** Os atributos de cada bloco do space, pelo nome. */
+/** Os atributos de cada bloco do site, pelo nome. */
 export interface CmsBlockAttributes {
   /** Chamada para ação, no máximo uma por post. */
   cta: {

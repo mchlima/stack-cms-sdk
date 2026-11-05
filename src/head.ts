@@ -1,6 +1,6 @@
 import type { Alternate, JsonLd, ResolvedSeo } from './types.js';
 
-/** What a page of the Delivery API brings for the `<head>` (RS-06): post, space, tag, category, author. */
+/** What a page of the Delivery API brings for the `<head>` (RS-06): post, site, tag, category, author. */
 export interface HeadInput {
   /** Already resolved by the API (RN-32): nothing left to fill. */
   seo: ResolvedSeo;

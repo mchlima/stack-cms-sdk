@@ -26,9 +26,9 @@ export interface CmsContentProps {
   /** Elements replaced by components of the site (or by another tag), by tag: `{ a: Link }`. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- each element has its own props
   components?: Record<string, Component<any> | string>;
-  /** `space.customBlocks`: types the attributes and warns about blocks without a component. */
+  /** `site.customBlocks`: types the attributes and warns about blocks without a component. */
   customBlocks?: readonly BlockDefinition[] | null;
-  /** Warns about blocks of the space without a component; in development by default. */
+  /** Warns about blocks of the site without a component; in development by default. */
   warn?: boolean;
 }
 

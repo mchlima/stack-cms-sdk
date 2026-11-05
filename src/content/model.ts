@@ -39,9 +39,9 @@ export interface ContentOptions {
   blocks?: BlockNames;
   /** The names of the elements that have a component in the site, by tag. */
   components?: BlockNames;
-  /** `space.customBlocks`: types the attributes and says which blocks of the space have no component. */
+  /** `site.customBlocks`: types the attributes and says which blocks of the site have no component. */
   customBlocks?: readonly BlockDefinition[] | null;
-  /** Warns about blocks of the space without a component; in development by default. */
+  /** Warns about blocks of the site without a component; in development by default. */
   warn?: boolean;
 }
 
@@ -116,7 +116,7 @@ export function contentNodes(hast: unknown, options: ContentOptions = {}): Conte
         return [{ type: 'block', block, children: convert(child.children) }];
       }
       if (block?.custom) {
-        // RS-12: a block of the space without a component never breaks the page.
+        // RS-12: a block of the site without a component never breaks the page.
         if (warn) {
           warnMissingBlock(block.name);
         }
