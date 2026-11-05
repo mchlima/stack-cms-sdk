@@ -12,7 +12,7 @@ import type {
   PostsQuery,
   Redirect,
   ResolvedPath,
-  Space,
+  Site,
   TagItem,
   TagPage,
   TermQuery,
@@ -25,7 +25,7 @@ export interface CmsClientOptions {
   apiKey: string;
   /** The API; production by default. */
   baseUrl?: string;
-  /** The language of every call that does not say one; without it, the default language of the space. */
+  /** The language of every call that does not say one; without it, the default language of the site. */
   locale?: string;
   /** Another `fetch`, such as the one of a framework with its cache. */
   fetch?: typeof fetch;
@@ -164,9 +164,9 @@ export function createCmsClient(options: CmsClientOptions) {
     request,
     file,
 
-    /** The space: languages, organization, SEO and the `<head>` of the home page. */
-    space: (query: { locale?: string } = {}, options?: RequestOptions) =>
-      get<Space>('/space', query, options),
+    /** The site: languages, organization, SEO and the `<head>` of the home page. */
+    site: (query: { locale?: string } = {}, options?: RequestOptions) =>
+      get<Site>('/site', query, options),
 
     posts: {
       /** The newest first; with `q`, the most relevant first (RN-36 of the API). */
@@ -218,7 +218,7 @@ export function createCmsClient(options: CmsClientOptions) {
     },
 
     menus: {
-      /** The menus of the space: `key`, `name` and `description`, without the items. */
+      /** The menus of the site: `key`, `name` and `description`, without the items. */
       list: (options?: RequestOptions) => get<MenuSummary[]>('/menus', { locale: null }, options),
       /** A menu with its tree of items already resolved (`href`, `url`, `external`), in a language. */
       get: (key: string, query: MenuQuery = {}, options?: RequestOptions) =>

@@ -34,7 +34,7 @@ export function tree(html: string): Root {
   return clean(fromHtml(html.replace(/<!--[^]*?-->/g, ''), { fragment: true })) as Root;
 }
 
-/** The HTML of the CMS with the blocks of the space as `renderHtml` leaves them without components. */
+/** The HTML of the CMS with the blocks of the site as `renderHtml` leaves them without components. */
 export function withoutCustomBlocks(html: string): string {
   return html
     .replace(/<div data-block="(?:cta|banner)"[^>]*><\/div>/g, '')
@@ -45,7 +45,7 @@ export function withoutCustomBlocks(html: string): string {
  * `custom-blocks.json` drawn with the test components: `cta` as a link, `destaque` as a section with the
  * types of its attributes, the links of the text as links of the site; `banner` has no component.
  */
-export const CUSTOM_EXPECTED = `<h2 id="blocos-do-space">Blocos do space</h2>
+export const CUSTOM_EXPECTED = `<h2 id="blocos-do-site">Blocos do site</h2>
 <p>Um <a href="https://web.dev/lcp" data-site-link="">link</a> no texto.</p>
 <a class="cta" href="/blog/outro-post">Leia o guia</a>
 <section class="destaque" data-types="number boolean"><p>Texto <strong>forte</strong> do destaque.</p><a class="cta" href="/contato">Fale com a gente</a></section>

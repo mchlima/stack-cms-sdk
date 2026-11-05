@@ -23,12 +23,12 @@ const draw = (props: Record<string, unknown>) =>
   container.renderToString(CmsContent as never, { props });
 
 describe('<CmsContent> for Astro (RS-11)', () => {
-  it('without replacements, draws the HTML of the CMS, without the blocks of the space', async () => {
+  it('without replacements, draws the HTML of the CMS, without the blocks of the site', async () => {
     const html = await draw({ hast: fixture.hast, warn: false });
     expect(tree(html)).toEqual(tree(withoutCustomBlocks(fixture.html)));
   });
 
-  it('CS-03: a block of the space becomes the component of the site; the rest stays the same', async () => {
+  it('CS-03: a block of the site becomes the component of the site; the rest stays the same', async () => {
     const html = await draw({ hast: fixture.hast, blocks: { cta: Cta } });
     const expected = fixture.html.replace(
       /<div data-block="cta"[^>]*>(.*?)<\/div>/s,
@@ -49,7 +49,7 @@ describe('<CmsContent> for Astro (RS-11)', () => {
     expect(html).toContain('<a href="https://web.dev/lcp" data-site-link="">guia do Google</a>');
   });
 
-  it('blocks of the space in the new form, nested, with attributes typed by customBlocks', async () => {
+  it('blocks of the site in the new form, nested, with attributes typed by customBlocks', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const html = await draw({
       hast: custom.hast,

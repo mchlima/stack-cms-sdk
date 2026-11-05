@@ -4,14 +4,14 @@
  */
 
 export interface paths {
-    "/delivery/v1/space": {
+    "/delivery/v1/site": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["deliverySpace"];
+        get: operations["deliverySite"];
         put?: never;
         post?: never;
         delete?: never;
@@ -487,7 +487,7 @@ export interface components {
             id: string;
             label: string;
             /**
-             * @description Para onde o item leva: nada (só agrupa), um link (url) ou uma página do space (targetId).
+             * @description Para onde o item leva: nada (só agrupa), um link (url) ou uma página do site (targetId).
              * @enum {string}
              */
             kind: "none" | "url" | "post" | "category" | "tag" | "author";
@@ -507,7 +507,7 @@ export interface components {
             to: string | null;
             status: number;
         };
-        DeliverySpace: {
+        DeliverySite: {
             /** Format: uuid */
             id: string;
             name: string;
@@ -553,7 +553,7 @@ export interface components {
         Error: {
             error: {
                 /** @enum {string} */
-                code: "VALIDATION_FAILED" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "TOO_MANY_REQUESTS" | "INSUFFICIENT_SCOPE" | "PLAN_LIMIT" | "SLUG_TAKEN" | "VERSION_CONFLICT" | "READ_ONLY" | "INVALID_FILE" | "IN_USE" | "BLOCKS_IN_USE" | "PUBLISH_BLOCKED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "ORIGIN_NOT_ALLOWED" | "TOO_MANY_ATTEMPTS" | "CAPTCHA_FAILED" | "INVALID_CREDENTIALS" | "EMAIL_NOT_VERIFIED" | "INVALID_LINK" | "WRONG_PASSWORD" | "LIMIT_REACHED" | "SIGN_IN_TO_ACCEPT" | "INVITATION_FOR_ANOTHER_EMAIL" | "IMPERSONATION_NOT_ALLOWED" | "ACCOUNT_SUSPENDED" | "LAST_OWNER";
+                code: "VALIDATION_FAILED" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "TOO_MANY_REQUESTS" | "INSUFFICIENT_SCOPE" | "PLAN_LIMIT" | "SLUG_TAKEN" | "VERSION_CONFLICT" | "READ_ONLY" | "INVALID_FILE" | "IN_USE" | "BLOCKS_IN_USE" | "PUBLISH_BLOCKED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "ORIGIN_NOT_ALLOWED" | "TOO_MANY_ATTEMPTS" | "CAPTCHA_FAILED" | "INVALID_CREDENTIALS" | "EMAIL_NOT_VERIFIED" | "INVALID_LINK" | "WRONG_PASSWORD" | "LIMIT_REACHED" | "SIGN_IN_TO_ACCEPT" | "INVITATION_FOR_ANOTHER_EMAIL" | "IMPERSONATION_NOT_ALLOWED" | "ACCOUNT_SUSPENDED" | "SUBSCRIPTION_REQUIRED" | "DELIVERY_SUSPENDED" | "ACCOUNT_ADMIN_REQUIRED" | "CARD_DECLINED" | "CARD_REQUIRED" | "BILLING_UNAVAILABLE" | "BILLING_STATE" | "LAST_OWNER";
                 /** @description Em pt-BR, pode ser mostrada à pessoa */
                 message: string;
                 details: {
@@ -734,10 +734,10 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            type: "post.published" | "post.updated" | "post.unpublished" | "taxonomy.updated" | "space.updated" | "redirects.updated" | "menu.updated";
+            type: "post.published" | "post.updated" | "post.unpublished" | "taxonomy.updated" | "site.updated" | "redirects.updated" | "menu.updated";
             /** Format: date-time */
             occurredAt: string;
-            space: {
+            site: {
                 /** Format: uuid */
                 id: string;
                 name: string;
@@ -806,7 +806,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    deliverySpace: {
+    deliverySite: {
         parameters: {
             query?: {
                 locale?: string;
@@ -822,7 +822,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DeliverySpace"];
+                    "application/json": components["schemas"]["DeliverySite"];
                 };
             };
             /** @description Erro */

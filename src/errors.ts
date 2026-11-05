@@ -13,7 +13,7 @@ export class CmsError extends Error {
   }
 }
 
-/** Nothing at that address, or a language the space does not have (CS-02). */
+/** Nothing at that address, or a language the site does not have (CS-02). */
 export class CmsNotFoundError extends CmsError {
   override name = 'CmsNotFoundError';
 }

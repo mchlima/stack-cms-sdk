@@ -14,12 +14,12 @@ import { CmsContent, type CmsContentProps } from './index.js';
 const draw = (props: CmsContentProps) => render(CmsContent, { props }).body;
 
 describe('<CmsContent> for Svelte (RS-11)', () => {
-  it('without replacements, draws the HTML of the CMS, without the blocks of the space', () => {
+  it('without replacements, draws the HTML of the CMS, without the blocks of the site', () => {
     const html = draw({ hast: fixture.hast, warn: false });
     expect(tree(html)).toEqual(tree(withoutCustomBlocks(fixture.html)));
   });
 
-  it('CS-03: a block of the space becomes the component of the site; the rest stays the same', () => {
+  it('CS-03: a block of the site becomes the component of the site; the rest stays the same', () => {
     const html = draw({ hast: fixture.hast, blocks: { cta: Cta } });
     const expected = fixture.html.replace(
       /<div data-block="cta"[^>]*>(.*?)<\/div>/s,
@@ -48,7 +48,7 @@ describe('<CmsContent> for Svelte (RS-11)', () => {
     );
   });
 
-  it('blocks of the space in the new form, nested, with attributes typed by customBlocks', () => {
+  it('blocks of the site in the new form, nested, with attributes typed by customBlocks', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const html = draw({
       hast: custom.hast,

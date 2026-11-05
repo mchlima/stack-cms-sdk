@@ -31,7 +31,7 @@ export type CmsCollection = 'posts' | 'tags' | 'categories' | 'authors' | 'menus
 export interface CmsLoaderOptions {
   /** What the collection brings: whole posts, the pages of the tags, categories or authors, or the menus. */
   collection: CmsCollection;
-  /** The languages to load; the default language of the space when not said. */
+  /** The languages to load; the default language of the site when not said. */
   locales?: string[];
   /** How many requests at once; 5 by default. */
   concurrency?: number;

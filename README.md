@@ -41,10 +41,10 @@ export async function POST(request: Request) {
 ### O conteúdo, com os componentes do site
 
 O CMS entrega cada post como `html` e `hast`. O `<CmsContent>` desenha o `hast` trocando cada bloco (os de todo
-space, como `note` e `answer`, e os do seu space, como `cta`) e cada elemento (`a`, `img`) por um componente do
+site, como `note` e `answer`, e os do seu site, como `cta`) e cada elemento (`a`, `img`) por um componente do
 site. A interface é a mesma em todos os frameworks: `hast`, `blocks`, `components` e, opcional, `customBlocks`
-(o `space.customBlocks`, que tipa os atributos e avisa em desenvolvimento dos blocos sem componente). Um bloco do
-space sem componente nunca quebra a página: o conteúdo dele fica e o bloco sem conteúdo some.
+(o `site.customBlocks`, que tipa os atributos e avisa em desenvolvimento dos blocos sem componente). Um bloco do
+site sem componente nunca quebra a página: o conteúdo dele fica e o bloco sem conteúdo some.
 
 React e Next (também em Server Components):
 
@@ -102,7 +102,7 @@ como o HTML do CMS.
 import { renderHtml } from '@stack201/cms-sdk';
 
 const html = renderHtml(post.hast, {
-  customBlocks: space.customBlocks,
+  customBlocks: site.customBlocks,
   blocks: {
     cta: ({ attributes }) =>
       `<a class="cta" href="${escape(attributes.href)}">${escape(attributes.label)}</a>`,
@@ -112,10 +112,10 @@ const html = renderHtml(post.hast, {
 ```
 
 `blocksOf(hast, customBlocks)` lista os blocos de um post, com os atributos tipados (`number` vira número,
-`boolean` vira booleano), e `missingBlocks(space.customBlocks, blocks)` diz quais blocos do space ainda não têm
+`boolean` vira booleano), e `missingBlocks(site.customBlocks, blocks)` diz quais blocos do site ainda não têm
 componente no site.
 
-Os tipos dos atributos de cada bloco do space saem da Delivery API:
+Os tipos dos atributos de cada bloco do site saem da Delivery API:
 
 ```sh
 CMS_DELIVERY_KEY=… npx cms-sdk blocks-types --out src/cms-blocks.ts
@@ -189,7 +189,7 @@ export const GET = cmsFileEndpoint(cms);
 `render(entry)` dá o HTML do post e os títulos, `cmsMarkdownEndpoint(cms)` serve o `.md` de cada post,
 `cmsPostSlugs(cms)` alimenta o `getStaticPaths` e `cmsAstroRedirects(cms)` dá os `redirects` do `astro.config`. Para
 publicar no CMS e o site se refazer, crie um _Deploy Hook_ no projeto da Vercel e cadastre o endereço dele como webhook
-do space.
+do site.
 
 ### Categorias em vários níveis
 

@@ -59,8 +59,8 @@
       ]
     }
   ],
-  "markdown": "## Blocos do space\n\nUm [link](https://web.dev/lcp) no texto.\n\n::cta{href=\"post:0199a000-0000-7000-8000-0000000000aa\" label=\"Leia o guia\" variant=\"primary\"}\n\n:::destaque{nivel=2 aberto cta-text=\"Veja\"}\nTexto **forte** do destaque.\n\n::cta{href=\"/contato\" label=\"Fale com a gente\"}\n:::\n\n::banner{titulo=\"Promoção\" link=\"https://stack201.com.br\"}\n\n:::note{type=\"tip\"}\nUma dica.\n:::",
-  "html": "<h2 id=\"blocos-do-space\">Blocos do space</h2>\n<p>Um <a href=\"https://web.dev/lcp\" rel=\"noopener\">link</a> no texto.</p>\n<div data-block=\"cta\" data-href=\"/blog/outro-post\" data-label=\"Leia o guia\" data-variant=\"primary\"></div>\n<div data-block=\"destaque\" data-nivel=\"2\" data-aberto=\"true\" data-cta-text=\"Veja\"><p>Texto <strong>forte</strong> do destaque.</p><div data-block=\"cta\" data-href=\"/contato\" data-label=\"Fale com a gente\"></div></div>\n<div data-block=\"banner\" data-titulo=\"Promoção\" data-link=\"https://stack201.com.br\"></div>\n<aside data-block=\"note\" data-type=\"tip\"><p>Uma dica.</p></aside>",
+  "markdown": "## Blocos do site\n\nUm [link](https://web.dev/lcp) no texto.\n\n::cta{href=\"post:0199a000-0000-7000-8000-0000000000aa\" label=\"Leia o guia\" variant=\"primary\"}\n\n:::destaque{nivel=2 aberto cta-text=\"Veja\"}\nTexto **forte** do destaque.\n\n::cta{href=\"/contato\" label=\"Fale com a gente\"}\n:::\n\n::banner{titulo=\"Promoção\" link=\"https://stack201.com.br\"}\n\n:::note{type=\"tip\"}\nUma dica.\n:::",
+  "html": "<h2 id=\"blocos-do-site\">Blocos do site</h2>\n<p>Um <a href=\"https://web.dev/lcp\" rel=\"noopener\">link</a> no texto.</p>\n<div data-block=\"cta\" data-href=\"/blog/outro-post\" data-label=\"Leia o guia\" data-variant=\"primary\"></div>\n<div data-block=\"destaque\" data-nivel=\"2\" data-aberto=\"true\" data-cta-text=\"Veja\"><p>Texto <strong>forte</strong> do destaque.</p><div data-block=\"cta\" data-href=\"/contato\" data-label=\"Fale com a gente\"></div></div>\n<div data-block=\"banner\" data-titulo=\"Promoção\" data-link=\"https://stack201.com.br\"></div>\n<aside data-block=\"note\" data-type=\"tip\"><p>Uma dica.</p></aside>",
   "hast": {
     "type": "root",
     "children": [
@@ -68,12 +68,12 @@
         "type": "element",
         "tagName": "h2",
         "properties": {
-          "id": "blocos-do-space"
+          "id": "blocos-do-site"
         },
         "children": [
           {
             "type": "text",
-            "value": "Blocos do space",
+            "value": "Blocos do site",
             "position": {
               "start": {
                 "line": 1,
