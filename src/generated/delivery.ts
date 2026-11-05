@@ -357,7 +357,7 @@ export interface components {
             path: string;
             url: string;
             /** @enum {string} */
-            kind: "Person" | "Organization" | "Publisher";
+            kind: "Person" | "Publisher";
             jobTitle: string | null;
             avatar: components["schemas"]["Image"] | null;
             posts: number;
@@ -370,7 +370,7 @@ export interface components {
             path: string;
             url: string;
             /** @enum {string} */
-            kind: "Person" | "Organization" | "Publisher";
+            kind: "Person" | "Publisher";
         };
         AuthorPage: {
             /** Format: uuid */
@@ -380,7 +380,7 @@ export interface components {
             path: string;
             url: string;
             /** @enum {string} */
-            kind: "Person" | "Organization" | "Publisher";
+            kind: "Person" | "Publisher";
             jobTitle: string | null;
             credentials: string | null;
             bio: string | null;
@@ -553,7 +553,7 @@ export interface components {
         Error: {
             error: {
                 /** @enum {string} */
-                code: "VALIDATION_FAILED" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "TOO_MANY_REQUESTS" | "INSUFFICIENT_SCOPE" | "PLAN_LIMIT" | "SLUG_TAKEN" | "VERSION_CONFLICT" | "READ_ONLY" | "INVALID_FILE" | "IN_USE" | "BLOCKS_IN_USE" | "PUBLISH_BLOCKED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "ORIGIN_NOT_ALLOWED" | "TOO_MANY_ATTEMPTS" | "CAPTCHA_FAILED" | "INVALID_CREDENTIALS" | "EMAIL_NOT_VERIFIED" | "INVALID_LINK" | "WRONG_PASSWORD" | "LIMIT_REACHED" | "SIGN_IN_TO_ACCEPT" | "INVITATION_FOR_ANOTHER_EMAIL" | "IMPERSONATION_NOT_ALLOWED" | "ACCOUNT_SUSPENDED" | "SUBSCRIPTION_REQUIRED" | "DELIVERY_SUSPENDED" | "ACCOUNT_ADMIN_REQUIRED" | "CARD_DECLINED" | "CARD_REQUIRED" | "BILLING_UNAVAILABLE" | "BILLING_STATE" | "LAST_OWNER";
+                code: "VALIDATION_FAILED" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "TOO_MANY_REQUESTS" | "INSUFFICIENT_SCOPE" | "PLAN_LIMIT" | "SLUG_TAKEN" | "VERSION_CONFLICT" | "READ_ONLY" | "INVALID_FILE" | "AUTHOR_NOT_ELIGIBLE" | "IN_USE" | "BLOCKS_IN_USE" | "PUBLISH_BLOCKED" | "INTERNAL_ERROR" | "SERVICE_UNAVAILABLE" | "ORIGIN_NOT_ALLOWED" | "TOO_MANY_ATTEMPTS" | "CAPTCHA_FAILED" | "INVALID_CREDENTIALS" | "EMAIL_NOT_VERIFIED" | "INVALID_LINK" | "WRONG_PASSWORD" | "LIMIT_REACHED" | "SIGN_IN_TO_ACCEPT" | "INVITATION_FOR_ANOTHER_EMAIL" | "IMPERSONATION_NOT_ALLOWED" | "ACCOUNT_SUSPENDED" | "SUBSCRIPTION_REQUIRED" | "DELIVERY_SUSPENDED" | "ACCOUNT_ADMIN_REQUIRED" | "CARD_DECLINED" | "CARD_REQUIRED" | "BILLING_UNAVAILABLE" | "BILLING_STATE" | "LAST_OWNER";
                 /** @description Em pt-BR, pode ser mostrada à pessoa */
                 message: string;
                 details: {
