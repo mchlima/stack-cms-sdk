@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/mchlima/stack-cms-sdk/compare/v0.8.0...v0.8.1) (2026-11-05)
+
+
+### Bug Fixes
+
+* autor é pessoa ou a empresa, sem o tipo Organization ([#23](https://github.com/mchlima/stack-cms-sdk/issues/23)) ([4f3ac65](https://github.com/mchlima/stack-cms-sdk/commit/4f3ac65b5e1673ec671d65c436cb95251a16afad))
+
 ## [0.8.0](https://github.com/mchlima/stack-cms-sdk/compare/v0.7.0...v0.8.0) (2026-11-05)
 
 
